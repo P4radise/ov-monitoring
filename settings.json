@@ -1,0 +1,13 @@
+{
+  "oneVizionUrl": "",
+  "oneVizionLogin": "",
+  "oneVizionPwd": "",
+  "trackorType" : "",
+
+  "awsAccessKeyId": "",
+  "awsSecretAccessKey": "",
+  "awsRegion": "",
+  "queueUrl" : "",
+
+  "iterationMaxNum" : 
+}
