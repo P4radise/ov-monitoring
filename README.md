@@ -7,6 +7,11 @@ SQS integration is used to receive messages from Amazon Simple Queue Service (SQ
 - Requests - [library for python](http://docs.python-requests.org/en/master/)
 - boto3 - [Boto is the Amazon Web Services (AWS) SDK for Python](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 
+## Permissions
+For the integration to work correctly, the aws user must have at least the following permissions for SQS:
+- Read: ReceiveMessage
+- Write: DeleteMessage
+
 ## Usage
 1. Install this integartion 
 2. Create a new separate Queue
