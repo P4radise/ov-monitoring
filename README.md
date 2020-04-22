@@ -17,9 +17,9 @@ For the integration to work correctly, the aws user must have at least the follo
 2. Create a new separate Queue
 3. Send messages to the created Queue
 4. Fill the settings file of the integartion
-   - oneVizionUrl - OneVizion URL
-   - oneVizionLogin - OneVizion Login
-   - oneVizionPwd - OneVizion Password
+   - ovUrl - OneVizion URL
+   - ovAccessKey - OneVizion Access Key
+   - ovSecretKey - OneVizion Secret Key
    - trackorType - Tractor Type for adding received messages
    - awsAccessKeyId - AWS Access Key ID
    - awsSecretAccessKey - AWS Secret Access Key
@@ -33,9 +33,9 @@ Example of settings.json
 
 ```json
 {
-    "oneVizionUrl": "test.onevizion.com",
-    "oneVizionLogin": "username",
-    "oneVizionPwd": "*****",
+    "ovUrl": "test.onevizion.com",
+    "ovAccessKey": "*****",
+    "ovSecretKey": "*****",
     "trackorType" : "Trackor Type",
 
     "awsAccessKeyId": "*****",

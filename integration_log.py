@@ -5,18 +5,16 @@ from curl import Curl
 
 class IntegrationLog(object):
 
-    def __init__(self, process_id, url, username, password):
+    def __init__(self, process_id, url, headers):
         self.URL = url
-        self.username = username
-        self.password = password
+        self.headers = headers
         self.processId = process_id
 
     def add_log(self, log_level, message, description=""):
         parameters = {'message': message, 'description': description, 'log_level_name': log_level}
         json_data = json.dumps(parameters)
-        headers = {'content-type': 'application/json'}
         url_log = self.URL + "/api/v3/integrations/runs/" + str(self.processId) + "/logs"
-        Curl('POST', url_log, data=json_data, headers=headers, auth=(self.username, self.password))
+        Curl('POST', url_log, data=json_data, headers=self.headers)
 
 
 class LogLevel(Enum):

@@ -1,6 +1,5 @@
 import boto3
 import json
-import onevizion
 import datetime
 
 from curl import Curl
@@ -9,7 +8,7 @@ from integration_log import IntegrationLog, LogLevel
 
 class Integration(object):
 
-    def __init__(self, ov_url, ov_username, ov_pwd, ov_tt, process_id, 
+    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_tt, process_id, 
                     aws_access_key_id, aws_secret_access_key, aws_region):
 
         self._aws_access_key_id = aws_access_key_id
@@ -23,12 +22,14 @@ class Integration(object):
         )
 
         self._ov_url = ov_url
-        self._ov_username = ov_username
-        self._ov_pwd = ov_pwd
+        self._ov_access_key = ov_access_key
+        self._ov_secret_key = ov_secret_key
         self._ov_tt = ov_tt
-        self._trackor = onevizion.Trackor(self._ov_tt, self._ov_url, self._ov_username, self._ov_pwd)
-        self._integration_log = IntegrationLog(process_id, ov_url, ov_username, ov_pwd)
-        self._headers = {'content-type': 'application/json'}
+        self._headers = {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + self._ov_access_key + ':' + self._ov_secret_key
+        }
+        self._integration_log = IntegrationLog(process_id, ov_url, self._headers)
 
     def start(self, queue_url, iteration_max_num = 100):
         self._integration_log.add_log(LogLevel.INFO.log_level_name, "Starting Integration")
@@ -82,7 +83,7 @@ class Integration(object):
     def create_trackor(self, fields):
         url = self._ov_url + '/api/v3/trackor_types/' + str(self._ov_tt) + '/trackors'
         data = {'fields': fields}
-        curl = Curl('POST', url, headers=self._headers, auth=(self._ov_username, self._ov_pwd), data=json.dumps(data))
+        curl = Curl('POST', url, headers=self._headers, data=json.dumps(data))
         if len(curl.errors) > 0:
             raise Exception(curl.errors)
         return curl.jsonData

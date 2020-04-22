@@ -1,7 +1,7 @@
 {
-  "oneVizionUrl": "",
-  "oneVizionLogin": "",
-  "oneVizionPwd": "",
+  "ovUrl": "",
+  "ovAccessKey": "",
+  "ovSecretKey": "",
   "trackorType" : "",
 
   "awsAccessKeyId": "",
@@ -9,5 +9,5 @@
   "awsRegion": "",
   "queueUrl" : "",
 
-  "iterationMaxNum" : 
+  "iterationMaxNum" :
 }
