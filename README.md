@@ -4,30 +4,36 @@ SQS integration is used to receive messages from Amazon Simple Queue Service (SQ
 
 ## Requirements
 - Python 3
-- Requests - [library for python](http://docs.python-requests.org/en/master/)
+- Requests - [library for python](https://requests.readthedocs.io/en/master/)
 - boto3 - [Boto is the Amazon Web Services (AWS) SDK for Python](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 
-## Permissions
-For the integration to work correctly, the aws user must have at least the following permissions for SQS:
-- Read: ReceiveMessage
-- Write: DeleteMessage
+## AWS Configuration
+1. Log into AWS console
+2. Create an IAM policy using SQSReceiveAndDeleteMessage.json
+3. Create an IAM user and store credentials
+4. Attach this new profile to the user
+5. In SQS section, create a new separate standard Queue with default settings. [Creating an Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html)
+6. Configure sending messages to the created Queue. For example, messages can be generated using OneVizion monitoring.
 
 ## Usage
-1. Install this integartion 
-2. Create a new separate Queue
-3. Send messages to the created Queue
-4. Fill the settings file of the integartion
+1. Install this integartion
+2. In order for integration to be useful, messages must be sent to the queue. For example, messages can be generated using OneVizion monitoring.
+3. Fill the settings file of the integartion
    - ovUrl - OneVizion URL
    - ovAccessKey - OneVizion Access Key
    - ovSecretKey - OneVizion Secret Key
    - trackorType - Tractor Type for adding received messages
+   - messageBodyField - Field Name. The body of the received message will be inserted into this field. This field must belong to the Trackor Type you specified
+   - sentDateTimeField - Field Name. The datetime the message was sent will be inserted into this field. This field must belong to the Trackor Type you specified 
+
    - awsAccessKeyId - AWS Access Key ID
    - awsSecretAccessKey - AWS Secret Access Key
    - awsRegion - AWS Region.
    - queueUrl - URL of created Queue
-   - iterationMaxNum - Maximum number of attempts to receive messages from the Queue
    
-5. Enable the integartion
+   - waitTimeSeconds - The duration (in seconds from 0 to 20) for which the call to receive a message waits for a message to arrive in the queue before returning. [Amazon SQS short and long polling](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-short-and-long-polling.html)
+   
+4. Enable the integartion
 
 Example of settings.json
 
@@ -37,12 +43,14 @@ Example of settings.json
     "ovAccessKey": "*****",
     "ovSecretKey": "*****",
     "trackorType" : "Trackor Type",
+    "messageBodyField" : "Field Name",
+    "sentDateTimeField" : "Field Name",
 
     "awsAccessKeyId": "*****",
     "awsSecretAccessKey": "*****",
     "awsRegion": "us-east-2",
     "queueUrl" : "https://sqs.us-east-2.amazonaws.com/788508682010/Test",
 
-    "iterationMaxNum" : 100
+    "waitTimeSeconds" : 10
 }
 ```

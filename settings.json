@@ -3,11 +3,13 @@
   "ovAccessKey": "",
   "ovSecretKey": "",
   "trackorType" : "",
+  "messageBodyField" : "",
+  "sentDateTimeField" : "",
 
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
   "awsRegion": "",
   "queueUrl" : "",
 
-  "iterationMaxNum" :
+  "waitTimeSeconds" :
 }
