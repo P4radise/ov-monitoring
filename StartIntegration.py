@@ -4,7 +4,7 @@ from SqsIntegration import Integration
 with open('settings.json', "rb") as PFile:
     pwd_data = json.loads(PFile.read().decode('utf-8'))
 
-ov_url = 'https://' + pwd_data["ovUrl"]
+ov_url = pwd_data["ovUrl"]
 ov_access_key = pwd_data["ovAccessKey"]
 ov_secret_key = pwd_data["ovSecretKey"]
 ov_trackor_type = pwd_data["trackorType"]
