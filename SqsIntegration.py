@@ -8,6 +8,8 @@ from integration_log import IntegrationLog, LogLevel
 
 
 class Integration(object):
+    MAX_NUMBER_OF_MESSAGES = 10
+    ITERATION_MAX_NUM = 200
 
     def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id,
                     aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
@@ -39,16 +41,14 @@ class Integration(object):
     def start(self):
         self._integration_log.add_log(LogLevel.INFO.log_level_name, "Starting Integration")
 
-        MAX_NUMBER_OF_MESSAGES = 10
-        ITERATION_MAX_NUM = 200
         iteration_count = 0
-        while iteration_count < ITERATION_MAX_NUM:
+        while iteration_count < Integration.ITERATION_MAX_NUM:
             try:
                 response = self._sqs_client.receive_message(
                     QueueUrl = self._queue_url,
                     AttributeNames = ['SentTimestamp'],
                     MessageAttributeNames = ['All'],
-                    MaxNumberOfMessages = MAX_NUMBER_OF_MESSAGES,
+                    MaxNumberOfMessages = Integration.MAX_NUMBER_OF_MESSAGES,
                     WaitTimeSeconds = self._wait_time_seconds
                 )
             except Exception as e:
