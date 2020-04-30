@@ -22,5 +22,6 @@ with open('ihub_process_id', "rb") as PFile:
     process_id = PFile.read().decode('utf-8')
 
 sqsIntegration = Integration(ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, 
-                                aws_access_key_id, aws_secret_access_key, aws_region)
-sqsIntegration.start(queue_url, message_body_field, sent_datetime_field, wait_time_seconds)
+                                aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
+                                message_body_field, sent_datetime_field, wait_time_seconds)
+sqsIntegration.start()
