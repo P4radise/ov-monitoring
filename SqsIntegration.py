@@ -53,8 +53,8 @@ class Integration(object):
                 )
             except Exception as e:
                 self._integration_log.add_log(LogLevel.ERROR.log_level_name,
-                                            'Cannot receive message',
-                                            self._queue_url)
+                                            'Cannot receive message. Queue URL = ' + self._queue_url,
+                                            str(e))
                 raise Exception('Cannot receive message') from e
 
             if not 'Messages' in response:
@@ -92,7 +92,7 @@ class Integration(object):
         except Exception as e:
             self._integration_log.add_log(LogLevel.ERROR.log_level_name,
                                         'Cannot delete message',
-                                        message)
+                                        'Message: ' + message + '\n' + str(e))
             raise Exception('Cannot delete message') from e
         
         self._integration_log.add_log(LogLevel.DEBUG.log_level_name, 

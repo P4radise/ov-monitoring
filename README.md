@@ -1,6 +1,6 @@
 # SqsIntegration
 
-SQS integration is used to receive messages from Amazon Simple Queue Service (SQS). After receiving the message, integration removes it from the queue.
+Read messages from the AWS SQS and store to the OneVizion Trackors.
 
 ## Requirements
 - Python 3
@@ -8,17 +8,35 @@ SQS integration is used to receive messages from Amazon Simple Queue Service (SQ
 - boto3 - [Boto is the Amazon Web Services (AWS) SDK for Python](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 
 ## AWS Configuration
-1. Log into AWS console
-2. Create an IAM policy using SQSReceiveAndDeleteMessage.json
-3. Create an IAM user and store credentials
-4. Attach this new profile to the user
-5. In SQS section, create a new separate standard Queue with default settings. [Creating an Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html)
-6. Configure sending messages to the created Queue. For example, messages can be generated using OneVizion monitoring.
+1. Log into AWS console.
+2. In SQS section, create a new separate standard Queue. [Creating an Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html). It is recommended that you keep the default settings.
+However, if you decide to change them, then pay special attention if the value of the Message Retention Period parameter is too small, then the message may be deleted before it is added to the OneVizion Trackors.
+3. Configure sending messages to the created Queue. For example, messages can be generated using OneVizion monitoring.
+4. Create an IAM policy using the json example below, where 'Test' is the name of the queue created.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:DeleteMessage",
+                "sqs:ReceiveMessage"
+            ],
+            "Resource": "arn:aws:sqs:*:*:Test"
+        }
+    ]
+}
+```
+
+5. Create an IAM user and store credentials.
+6. Attach this new profile to the user.
+
 
 ## Usage
 1. Install this integartion
-2. In order for integration to be useful, messages must be sent to the queue. For example, messages can be generated using OneVizion monitoring.
-3. Fill the settings file of the integartion
+2. Fill the settings file of the integartion
    - ovUrl - OneVizion URL
    - ovAccessKey - OneVizion Access Key
    - ovSecretKey - OneVizion Secret Key
@@ -33,7 +51,7 @@ SQS integration is used to receive messages from Amazon Simple Queue Service (SQ
    
    - waitTimeSeconds - The duration (in seconds from 0 to 20) for which the call to receive a message waits for a message to arrive in the queue before returning. [Amazon SQS short and long polling](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-short-and-long-polling.html)
    
-4. Enable the integartion
+3. Enable the integartion
 
 Example of settings.json
 
