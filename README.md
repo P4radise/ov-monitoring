@@ -12,7 +12,7 @@ Read messages from the AWS SQS and store to the OneVizion Trackors.
 2. In SQS section, create a new separate standard Queue. [Creating an Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html). It is recommended that you keep the default settings.
 However, if you decide to change them, then pay special attention if the value of the Message Retention Period parameter is too small, then the message may be deleted before it is added to the OneVizion Trackors.
 3. Configure sending messages to the created Queue. For example, messages can be generated using OneVizion monitoring.
-4. Create an IAM policy using the json example below, where 'Test' is the name of the queue created.
+4. Create an IAM policy using the json example below, where \<SQS ARN\> is Amazon Resource Name of the SQS created on step 2.
 
 ```json
 {
@@ -24,7 +24,7 @@ However, if you decide to change them, then pay special attention if the value o
                 "sqs:DeleteMessage",
                 "sqs:ReceiveMessage"
             ],
-            "Resource": "arn:aws:sqs:*:*:Test"
+            "Resource": "<SQS ARN>"
         }
     ]
 }
