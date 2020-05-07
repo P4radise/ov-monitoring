@@ -40,6 +40,7 @@ However, if you decide to change them, then pay special attention if the value o
    - ovUrl - OneVizion URL
    - ovAccessKey - OneVizion Access Key
    - ovSecretKey - OneVizion Secret Key
+   - integrationName - Integration Name in OneVizion Trackor
    - trackorType - Tractor Type for adding received messages
    - messageBodyField - Field Name. The body of the received message will be inserted into this field. This field must belong to the Trackor Type you specified
    - sentDateTimeField - Field Name. The datetime the message was sent will be inserted into this field. This field must belong to the Trackor Type you specified 
@@ -60,6 +61,7 @@ Example of settings.json
     "ovUrl": "test.onevizion.com",
     "ovAccessKey": "*****",
     "ovSecretKey": "*****",
+    "integrationName": "SqsIntegration",
     "trackorType" : "Trackor Type",
     "messageBodyField" : "Field Name",
     "sentDateTimeField" : "Field Name",

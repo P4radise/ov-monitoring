@@ -2,6 +2,7 @@
   "ovUrl": "",
   "ovAccessKey": "",
   "ovSecretKey": "",
+  "integrationName": "",
   "trackorType" : "",
   "messageBodyField" : "",
   "sentDateTimeField" : "",
