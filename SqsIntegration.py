@@ -1,102 +1,119 @@
-import boto3
-import json
-import datetime
-import onevizion
-
 from integration_log import IntegrationLog, LogLevel
+from message_queue_service import MessageQueueService
+from message_trackor import MessageTrackor
 
 
 class Integration(object):
-    MAX_NUMBER_OF_MESSAGES = 10
     ITERATION_MAX_NUM = 200
 
-    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, integration_name,
+    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_name,
                     aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                    message_body_field, sent_datetime_field, wait_time_seconds = 10):
+                    message_body_field, sent_datetime_field, wait_time_seconds):
 
-        self._aws_access_key_id = aws_access_key_id
-        self._aws_secret_access_key = aws_secret_access_key
-        self._aws_region = aws_region
-        self._sqs_client = boto3.client(
-            'sqs', 
-            region_name=self._aws_region, 
-            aws_access_key_id = self._aws_access_key_id, 
-            aws_secret_access_key = self._aws_secret_access_key
-        )
-
-        self._ov_url = ov_url
-        self._ov_access_key = ov_access_key
-        self._ov_secret_key = ov_secret_key
-        self._ov_trackor_type = ov_trackor_type
-        self._integration_name = integration_name
-
-        self._queue_url = queue_url
-        self._message_body_field = message_body_field
-        self._sent_datetime_field = sent_datetime_field
-        self._wait_time_seconds = wait_time_seconds
-
-        self._integration_log = IntegrationLog(process_id, self._ov_url, self._ov_access_key, self._ov_secret_key, self._integration_name, ov_token=True)
-        self._trackor = onevizion.Trackor(self._ov_trackor_type, self._ov_url, self._ov_access_key, self._ov_secret_key, ovToken=True)
+        self._message_queue_service = MessageQueueService(aws_access_key_id, aws_secret_access_key, aws_region,
+                                                            queue_url, wait_time_seconds)
+        self._integration_log = IntegrationLog(process_id, ov_url, ov_access_key, ov_secret_key,
+                                                ov_integration_name, ov_token=True)
+        self._message_trackor = MessageTrackor(ov_url, ov_access_key, ov_secret_key, 
+                                                ov_trackor_type, message_body_field, sent_datetime_field, ov_token=True)
+        self._exception_handling = ExceptionHandling()
 
     def start(self):
-        self._integration_log.add_log(LogLevel.INFO, "Starting Integration")
+        self._integration_log.add_log(LogLevel.INFO, 'Starting Integration')
 
         iteration_count = 0
         while iteration_count < Integration.ITERATION_MAX_NUM:
+            self._integration_log.add_log(LogLevel.INFO, 'Receiving messages from the SQS queue')
             try:
-                response = self._sqs_client.receive_message(
-                    QueueUrl = self._queue_url,
-                    AttributeNames = ['SentTimestamp'],
-                    MessageAttributeNames = ['All'],
-                    MaxNumberOfMessages = Integration.MAX_NUMBER_OF_MESSAGES,
-                    WaitTimeSeconds = self._wait_time_seconds
-                )
+                messages = self._message_queue_service.get_messages()
             except Exception as e:
-                self._integration_log.add_log(LogLevel.ERROR,
-                                            'Cannot receive message. Queue URL = ' + self._queue_url,
-                                            str(e))
-                raise Exception('Cannot receive message') from e
+                description = self._exception_handling.get_description(e, MessageQueueService.SYSTEM_NAME)
+                self.integration_stop(e, LogLevel.ERROR, 'Cannot get messages from SQS queue', description)
 
-            if not 'Messages' in response:
+            if messages is None:
                 break
 
-            for message in response['Messages']:
-                self.create_trackor(message)
-                self.delete_message(message)
+            for message in messages:
+                self._integration_log.add_log(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(message))
                 
+                try:
+                    message_body = self._message_queue_service.get_message_param(message, 'Body')
+                except Exception as e:
+                    self.integration_stop(e, LogLevel.ERROR, 'Cannot get body of message', str(e))
+                
+                self._integration_log.add_log(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
+
+                try:
+                    sent_datetime = self._message_queue_service.get_sent_datetime(message)
+                except Exception as e:
+                    self.integration_stop(e, LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
+
+                self._integration_log.add_log(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
+
+                try:
+                    trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
+                except Exception as e:
+                    description = self._exception_handling.get_description(e, MessageTrackor.SYSTEM_NAME)
+                    self.integration_stop(e, LogLevel.ERROR, 'Cannot Trackor create', description)
+
+                self._integration_log.add_log(LogLevel.INFO, 
+                                            'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
+                                            trackor_id=str(trackor['TRACKOR_ID']), trackor_key=trackor['TRACKOR_KEY']))
+                
+                try:
+                    self._message_queue_service.delete_message(message)
+                except Exception as e:
+                    description = self._exception_handling.get_description(e, MessageQueueService.SYSTEM_NAME)
+                    self.integration_stop(e, LogLevel.ERROR, 'Cannot remove message from SQS queue', description)
+
+                self._integration_log.add_log(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(message))
+                
+
             iteration_count += 1
 
         if iteration_count == 0:
             self._integration_log.add_log(LogLevel.WARNING, 'No new messages found')
+        elif iteration_count == Integration.ITERATION_MAX_NUM:
+            self._integration_log.add_log(LogLevel.WARNING,
+                                        'The number of messages is large or messages are sent more often than the integration has time to complete')
+        else:
+            self._integration_log.add_log(LogLevel.INFO, 'No messages')
             
         self._integration_log.add_log(LogLevel.INFO, 'Integration has been completed')
 
-    def create_trackor(self, message):
-        sent_timestamp = int(message['Attributes']['SentTimestamp'])
-        sent_datetime = datetime.datetime.fromtimestamp(sent_timestamp / 1000)
-        fields = {
-            self._message_body_field : message['Body'], 
-            self._sent_datetime_field : sent_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        }
-        
-        self._trackor.create(fields)
-        if self._trackor.jsonData == {}:
-            raise Exception("Trackor not created. \nRequest text:" + self._trackor.request.text)
-        else:
-            self._integration_log.add_log(LogLevel.DEBUG, 
-                                        'Trackor created. Trackor Id = ' + str(self._trackor.jsonData['TRACKOR_ID']) + ' Trackor Key = ' + self._trackor.jsonData['TRACKOR_KEY'])
+    def integration_stop(self, e, log_level, message, description):
+        self._integration_log.add_log(log_level, message, description)
+        raise Exception(message) from e
 
-    def delete_message(self, message):
+
+class ExceptionHandling:
+    comments = {
+        401: 'Please make sure that the Access and Private keys of {system} user are correct, also that the token is active.',
+        403: 'Please check the privileges of {system} user created for integration, also pay attention to the token.',
+        404: 'Please take a look at the file with the integration settings, make sure that {system} param are filled correctly.'
+    }
+
+    def get_comment(self, status_code, system):
+        status_code = int(status_code)
+        if int(status_code) in ExceptionHandling.comments:
+            return ExceptionHandling.comments[status_code].format(system=system)
+        else:
+            return ''
+    
+    def get_description(self, exc, system_name):
+        error_message = str(exc)
+
         try:
-            self._sqs_client.delete_message(
-                QueueUrl = self._queue_url,
-                ReceiptHandle = message['ReceiptHandle']
-            )
-        except Exception as e:
-            self._integration_log.add_log(LogLevel.ERROR,
-                                        'Cannot delete message',
-                                        'Message: ' + message + '\n' + str(e))
-            raise Exception('Cannot delete message') from e
+            status_code = exc.response['ResponseMetadata']['HTTPStatusCode']
+        except Exception:
+            status_code = -1
+
+        if status_code == -1 and hasattr(exc.args[0], 'status_code'):
+            status_code = exc.args[0].status_code
+            error_message = exc.args[0].text
         
-        self._integration_log.add_log(LogLevel.DEBUG, 
-                                    'Message ' + message['MessageId'] + ' deleted')
+        description = self.get_comment(status_code, system=system_name)
+        if description == '':
+            return error_message
+        else:
+            return '{description}\n{error}'.format(description=description, error=error_message)

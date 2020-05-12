@@ -12,7 +12,7 @@ Read messages from the AWS SQS and store to the OneVizion Trackors.
 2. In SQS section, create a new separate standard Queue. [Creating an Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html). It is recommended that you keep the default settings.
 However, if you decide to change them, then pay special attention if the value of the Message Retention Period parameter is too small, then the message may be deleted before it is added to the OneVizion Trackors.
 3. Configure sending messages to the created Queue. For example, messages can be generated using OneVizion monitoring.
-4. Create an IAM policy using the json example below, where \<SQS ARN\> is Amazon Resource Name of the SQS created on step 2.
+4. Create an IAM policy using the json example below, where \<SQS ARN\> is [Amazon Resource Name](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) of the SQS created on step 2.
 
 ```json
 {
@@ -31,16 +31,24 @@ However, if you decide to change them, then pay special attention if the value o
 ```
 
 5. Create an IAM user and store credentials.
-6. Attach this new profile to the user.
+6. Attach this new IAM policy to the IAM user.
 
 
 ## Usage
-1. Install this integartion
-2. Fill the settings file of the integartion
+1. Create Trackor Type that will store messages. In this Trackor Type there should be a field in which the received message will be stored, as well as a field in which the date and time of sending the message will be stored.
+2. Install this integartion
+3. Create dedicated account for integration with following privs:
+   * WEB_SERVICES R
+   * ADMIN_INTEGRATION R
+   * ADMIN_INTEGRATION_LOG RA
+   * \<User Trackor Type\> RA
+   * \<User Trackor Type Tab containing messageBodyField and sentDateTimeField\> RE
+4. Create a token for the account created on step 3
+5. Fill the integartion settings file
    - ovUrl - OneVizion URL
    - ovAccessKey - OneVizion Access Key
    - ovSecretKey - OneVizion Secret Key
-   - integrationName - Integration Name in OneVizion Trackor
+   - ovIntegrationName - Integration Name in OneVizion Trackor
    - trackorType - Tractor Type for adding received messages
    - messageBodyField - Field Name. The body of the received message will be inserted into this field. This field must belong to the Trackor Type you specified
    - sentDateTimeField - Field Name. The datetime the message was sent will be inserted into this field. This field must belong to the Trackor Type you specified 
@@ -52,7 +60,7 @@ However, if you decide to change them, then pay special attention if the value o
    
    - waitTimeSeconds - The duration (in seconds from 0 to 20) for which the call to receive a message waits for a message to arrive in the queue before returning. [Amazon SQS short and long polling](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-short-and-long-polling.html)
    
-3. Enable the integartion
+6. Enable the integartion
 
 Example of settings.json
 
@@ -61,7 +69,7 @@ Example of settings.json
     "ovUrl": "test.onevizion.com",
     "ovAccessKey": "*****",
     "ovSecretKey": "*****",
-    "integrationName": "SqsIntegration",
+    "ovIntegrationName": "SqsIntegration",
     "trackorType" : "Trackor Type",
     "messageBodyField" : "Field Name",
     "sentDateTimeField" : "Field Name",
