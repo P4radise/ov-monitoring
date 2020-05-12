@@ -36,7 +36,7 @@ However, if you decide to change them, then pay special attention if the value o
 
 ## Usage
 1. Create Trackor Type that will store messages. In this Trackor Type there should be a field in which the received message will be stored, as well as a field in which the date and time of sending the message will be stored.
-2. Install this integartion
+2. Install this integration
 3. Create dedicated account for integration with following privs:
    * WEB_SERVICES R
    * ADMIN_INTEGRATION R
@@ -44,12 +44,12 @@ However, if you decide to change them, then pay special attention if the value o
    * \<User Trackor Type\> RA
    * \<User Trackor Type Tab containing messageBodyField and sentDateTimeField\> RE
 4. Create a token for the account created on step 3
-5. Fill the integartion settings file
+5. Fill the integration settings file
    - ovUrl - OneVizion URL
    - ovAccessKey - OneVizion Access Key
    - ovSecretKey - OneVizion Secret Key
    - ovIntegrationName - Integration Name in OneVizion Trackor
-   - trackorType - Tractor Type for adding received messages
+   - trackorType - Trackor Type for adding received messages
    - messageBodyField - Field Name. The body of the received message will be inserted into this field. This field must belong to the Trackor Type you specified
    - sentDateTimeField - Field Name. The datetime the message was sent will be inserted into this field. This field must belong to the Trackor Type you specified 
 
@@ -60,7 +60,7 @@ However, if you decide to change them, then pay special attention if the value o
    
    - waitTimeSeconds - The duration (in seconds from 0 to 20) for which the call to receive a message waits for a message to arrive in the queue before returning. [Amazon SQS short and long polling](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-short-and-long-polling.html)
    
-6. Enable the integartion
+6. Enable the integration
 
 Example of settings.json
 
