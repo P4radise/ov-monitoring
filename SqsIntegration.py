@@ -51,7 +51,7 @@ class Integration(object):
                 try:
                     trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
                 except Exception as e:
-                    self.integration_stop(e, LogLevel.ERROR, 'Cannot Trackor create ', str(e))
+                    self.integration_stop(e, LogLevel.ERROR, 'Cannot create Trackor', str(e))
 
                 self._integration_log.add_log(LogLevel.INFO, 
                                             'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
