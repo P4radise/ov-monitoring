@@ -41,8 +41,8 @@ However, if you decide to change them, then pay special attention if the value o
    * WEB_SERVICES R
    * ADMIN_INTEGRATION R
    * ADMIN_INTEGRATION_LOG RA
-   * \<User Trackor Type\> RA
-   * \<User Trackor Type Tab containing messageBodyField and sentDateTimeField\> RE
+   * \<Trackor Type\> RA
+   * \<Trackor Type Tab containing messageBodyField and sentDateTimeField\> RE
 4. Create a token for the account created on step 3
 5. Fill the integration settings file
    - ovUrl - OneVizion URL

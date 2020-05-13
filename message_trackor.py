@@ -2,7 +2,6 @@ import onevizion
 
 
 class MessageTrackor:
-    SYSTEM_NAME = 'OneVizion'
 
     def __init__(self, url, access_key, secret_key, trackor_type, message_body_field, sent_datetime_field, ov_token):
         self._url = url
@@ -23,7 +22,7 @@ class MessageTrackor:
         }
         
         self._trackor.create(fields)
-        if self._trackor.jsonData == {}:
-            raise Exception(self._trackor.request)
+        if len(self._trackor.errors) > 0:
+            raise Exception(self._trackor.errors)
     
         return self._trackor.jsonData

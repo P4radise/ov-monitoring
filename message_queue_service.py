@@ -3,7 +3,6 @@ import datetime
 
 class MessageQueueService:
     MAX_NUMBER_OF_MESSAGES = 10
-    SYSTEM_NAME = 'AWS'
 
     def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds=10):
         self._access_key_id = access_key_id
