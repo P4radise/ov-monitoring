@@ -1,5 +1,5 @@
 import json
-from SqsIntegration import Integration
+from sqs_integration import Integration
 
 with open('settings.json', "rb") as PFile:
     settings_data = json.loads(PFile.read().decode('utf-8'))
