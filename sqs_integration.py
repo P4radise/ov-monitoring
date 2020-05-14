@@ -26,7 +26,8 @@ class Integration(object):
             try:
                 messages = self._message_queue_service.get_messages()
             except Exception as e:
-                self.integration_stop(e, LogLevel.ERROR, 'Cannot get messages from SQS queue', str(e))
+                self._integration_log.add_log(LogLevel.ERROR, 'Cannot get messages from SQS queue', str(e))
+                raise Exception('Cannot get messages from SQS queue') from e
 
             if messages is None:
                 break
@@ -37,21 +38,24 @@ class Integration(object):
                 try:
                     message_body = self._message_queue_service.get_message_param(message, 'Body')
                 except Exception as e:
-                    self.integration_stop(e, LogLevel.ERROR, 'Cannot get body of message', str(e))
+                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot get body of message', str(e))
+                    raise Exception('Cannot get body of message') from e
                 
                 self._integration_log.add_log(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
 
                 try:
                     sent_datetime = self._message_queue_service.get_sent_datetime(message)
                 except Exception as e:
-                    self.integration_stop(e, LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
+                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
+                    raise Exception('Cannot get sent datetime of message') from e
 
                 self._integration_log.add_log(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
 
                 try:
                     trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
                 except Exception as e:
-                    self.integration_stop(e, LogLevel.ERROR, 'Cannot create Trackor', str(e))
+                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot create Trackor', str(e))
+                    raise Exception('Cannot create Trackor') from e
 
                 self._integration_log.add_log(LogLevel.INFO, 
                                             'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
@@ -60,7 +64,8 @@ class Integration(object):
                 try:
                     self._message_queue_service.delete_message(message)
                 except Exception as e:
-                    self.integration_stop(e, LogLevel.ERROR, 'Cannot remove message from SQS queue', str(e))
+                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot remove message from SQS queue', str(e))
+                    raise Exception('Cannot remove message from SQS queue') from e
 
                 self._integration_log.add_log(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(message))
                 
@@ -75,7 +80,3 @@ class Integration(object):
             self._integration_log.add_log(LogLevel.INFO, 'No messages')
             
         self._integration_log.add_log(LogLevel.INFO, 'Integration has been completed')
-
-    def integration_stop(self, e, log_level, message, description):
-        self._integration_log.add_log(log_level, message, description)
-        raise Exception(message) from e

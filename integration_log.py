@@ -15,7 +15,7 @@ class IntegrationLog(object):
             self._auth = requests.auth.HTTPBasicAuth(username, password)
         self._integration_name = integration_name
         self._integration_params = self.get_integration_params()
-        self._ov_log_level_id = self.get_ov_log_level_id()
+        self._ov_log_level = LogLevel.get_log_level_by_name(self._integration_params["log_level"])
 
     def get_integration_params(self):
         headers = {'content-type': 'application/json'}
@@ -26,7 +26,7 @@ class IntegrationLog(object):
         return curl.jsonData
 
     def add_log(self, log_level, message, description=""):
-        if log_level.log_level_id <= self._ov_log_level_id:
+        if log_level.log_level_id <= self._ov_log_level.log_level_id:
             parameters = {'message': message, 'description': description, 'log_level_name': log_level.log_level_name}
             json_data = json.dumps(parameters)
             headers = {'content-type': 'application/json'}
@@ -36,22 +36,24 @@ class IntegrationLog(object):
                 raise Exception(curl.errors)
             return curl.jsonData
     
-    def get_ov_log_level_id(self):
-        for log_level in list(LogLevel):
-            if log_level.log_level_name == self._integration_params["log_level"]:
-                return log_level.log_level_id
-
-        return LogLevel.INFO.log_level_id
 
 class LogLevel(Enum):
-    INFO = (0, "Info")
+    ERROR = (0, "Error")
     WARNING = (1, "Warning")
-    ERROR = (2, "Error")
+    INFO = (2, "Info")
     DEBUG = (3, "Debug")
 
     def __init__(self, log_level_id, log_level_name):
         self.log_level_id = log_level_id
         self.log_level_name = log_level_name
+
+    @staticmethod
+    def get_log_level_by_name(ov_log_level_name):
+        for log_level in list(LogLevel):
+            if log_level.log_level_name == ov_log_level_name:
+                return log_level
+        raise Exception("Cannot find the log level called '{}'".format(ov_log_level_name))
+    
 
 class HTTPBearerAuth(requests.auth.AuthBase):
 	def __init__(self, ov_access_key, ov_secret_key):
