@@ -6,6 +6,7 @@
   "trackorType" : "",
   "messageBodyField" : "",
   "sentDateTimeField" : "",
+  "messageFilter" : "(?s).*",
 
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",

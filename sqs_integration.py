@@ -8,10 +8,10 @@ class Integration(object):
 
     def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_name,
                     aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                    message_body_field, sent_datetime_field, wait_time_seconds):
+                    message_body_field, sent_datetime_field, message_filter, wait_time_seconds):
 
         self._message_queue_service = MessageQueueService(aws_access_key_id, aws_secret_access_key, aws_region,
-                                                            queue_url, wait_time_seconds)
+                                                            queue_url, wait_time_seconds, message_filter)
         self._integration_log = IntegrationLog(process_id, ov_url, ov_access_key, ov_secret_key,
                                                 ov_integration_name, ov_token=True)
         self._message_trackor = MessageTrackor(ov_url, ov_access_key, ov_secret_key, 
@@ -44,23 +44,34 @@ class Integration(object):
                 self._integration_log.add_log(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
 
                 try:
-                    sent_datetime = self._message_queue_service.get_sent_datetime(message)
+                    is_message_matches_filter = self._message_queue_service.is_message_matches_filter(message_body)
                 except Exception as e:
-                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
-                    raise Exception('Cannot get sent datetime of message') from e
+                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot determine the matches of the message to the filter', str(e))
+                    raise Exception('Cannot determine the matches of the message to the filter') from e
 
-                self._integration_log.add_log(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
+                if is_message_matches_filter == True:
+                    try:
+                        sent_datetime = self._message_queue_service.get_sent_datetime(message)
+                    except Exception as e:
+                        self._integration_log.add_log(LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
+                        raise Exception('Cannot get sent datetime of message') from e
 
-                try:
-                    trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
-                except Exception as e:
-                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot create Trackor', str(e))
-                    raise Exception('Cannot create Trackor') from e
+                    self._integration_log.add_log(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
 
-                self._integration_log.add_log(LogLevel.INFO, 
-                                            'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
-                                            trackor_id=str(trackor['TRACKOR_ID']), trackor_key=trackor['TRACKOR_KEY']))
-                
+                    try:
+                        trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
+                    except Exception as e:
+                        self._integration_log.add_log(LogLevel.ERROR, 'Cannot create Trackor', str(e))
+                        raise Exception('Cannot create Trackor') from e
+
+                    self._integration_log.add_log(LogLevel.INFO, 
+                                                'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
+                                                trackor_id=str(trackor['TRACKOR_ID']), trackor_key=trackor['TRACKOR_KEY']))
+                else:
+                    self._integration_log.add_log(LogLevel.INFO, 
+                                        'Message does not match filter specified in the settings file', 
+                                        'Message Body = {}'.format(message_body))
+                    
                 try:
                     self._message_queue_service.delete_message(message)
                 except Exception as e:

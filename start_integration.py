@@ -11,6 +11,7 @@ ov_integration_name = settings_data["ovIntegrationName"]
 ov_trackor_type = settings_data["trackorType"]
 message_body_field = settings_data["messageBodyField"]
 sent_datetime_field = settings_data["sentDateTimeField"]
+message_filter = settings_data["messageFilter"]
 
 aws_access_key_id = settings_data["awsAccessKeyId"]
 aws_secret_access_key = settings_data["awsSecretAccessKey"]
@@ -24,5 +25,5 @@ with open('ihub_process_id', "rb") as PFile:
 
 sqsIntegration = Integration(ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_name, 
                                 aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                                message_body_field, sent_datetime_field, wait_time_seconds)
+                                message_body_field, sent_datetime_field, message_filter, wait_time_seconds)
 sqsIntegration.start()

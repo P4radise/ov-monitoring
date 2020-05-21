@@ -1,15 +1,17 @@
 import boto3
 import datetime
+import re
 
 class MessageQueueService:
     MAX_NUMBER_OF_MESSAGES = 10
 
-    def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds=10):
+    def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds=10, message_filter='(?s).*'):
         self._access_key_id = access_key_id
         self._secret_access_key = secret_access_key
         self._aws_region = aws_region
         self._queue_url = queue_url
         self._wait_time_seconds = wait_time_seconds
+        self._message_filter = message_filter
 
         self._sqs_client = boto3.client(
             'sqs', 
@@ -57,3 +59,13 @@ class MessageQueueService:
         except Exception as e:
             raise Exception('Incorrect timestamp of sent message.\nSent Timestamp: {sent_datetime}\nMessage: {message}'.format(
                                 sent_datetime=sent_datetime, message=message)) from e
+
+    def is_message_matches_filter(self, message_body):
+        try:
+            if re.fullmatch(self._message_filter, message_body) == None:
+                return False
+            else:
+                return True
+        except Exception as e:
+            raise Exception('Incorrect message body or filter.\n Message body = {}\nFilter = {}'.format(
+                                message_body, self._message_filter)) from e
