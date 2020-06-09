@@ -74,10 +74,10 @@ if wait_time_seconds is not None and (not isinstance(wait_time_seconds, int) or 
     add_error_text('waitTimeSeconds value must be an integer between 0 and 20 or null')
 
 if integration_log and error_text:
-    integration_log.add(LogLevel.ERROR, 'Incorrect value(s) ​​in the settings file', error_text)
-    raise Exception('Incorrect value(s) ​​in the settings file')
+    integration_log.add(LogLevel.ERROR, 'Incorrect value(s) in the settings file', error_text)
+    raise Exception('Incorrect value(s) in the settings file')
 elif error_text:
-    raise Exception('Incorrect value(s) ​​in the settings file.\n{}'.format(error_text))
+    raise Exception('Incorrect value(s) in the settings file.\n{}'.format(error_text))
 
 sqsIntegration = Integration(ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, integration_log, 
                                 aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
