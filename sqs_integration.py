@@ -9,7 +9,7 @@ class Integration(object):
 
     def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_log,
                     aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                    message_body_field, sent_datetime_field, message_filter='(?s).*', wait_time_seconds=10):
+                    message_body_field, sent_datetime_field, message_filter, wait_time_seconds):
         self._message_filter = message_filter
         self._integration_log = ov_integration_log
 
@@ -37,7 +37,7 @@ class Integration(object):
                 message_body = aws_message.get_body()
                 self._integration_log.add(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
 
-                is_matched_with_filter = aws_message.matches_filter(self._message_filter)
+                is_matched_with_filter = True if self._message_filter is None else aws_message.matches_filter(self._message_filter)
 
                 if is_matched_with_filter:
                     sent_datetime = aws_message.get_sent_datetime()

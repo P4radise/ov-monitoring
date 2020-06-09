@@ -52,7 +52,7 @@ However, if you decide to change them, then pay special attention if the value o
    - trackorType - Trackor Type for adding received messages
    - messageBodyField - Field Name. The body of the received message will be inserted into this field. This field must belong to the Trackor Type you specified
    - sentDateTimeField - Field Name. The datetime the message was sent will be inserted into this field. This field must belong to the Trackor Type you specified 
-   - messageFilter - Regular expression. A Trackor for the message will be created if the message matches this regular expression. Do not change the value of this param if you want a Trackor to be created for all messages. [Regular expression syntax](https://docs.python.org/3/library/re.html#regular-expression-syntax)
+   - messageFilter - Regular expression. A Trackor for the message will be created if the message matches this regular expression. null in the value of this param will mean that the filter is not used and Trackors will be created for all messages. [Regular expression syntax](https://docs.python.org/3/library/re.html#regular-expression-syntax)
 
    - awsAccessKeyId - AWS Access Key ID
    - awsSecretAccessKey - AWS Secret Access Key
@@ -74,7 +74,7 @@ Example of settings.json
     "trackorType" : "Trackor Type",
     "messageBodyField" : "Field Name",
     "sentDateTimeField" : "Field Name",
-    "messageFilter" : "(?s).*",
+    "messageFilter" : null,
 
     "awsAccessKeyId": "*****",
     "awsSecretAccessKey": "*****",

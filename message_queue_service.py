@@ -4,12 +4,12 @@ import datetime
 class MessageQueueService:
     MAX_NUMBER_OF_MESSAGES = 10
 
-    def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds=10):
+    def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds):
         self._access_key_id = access_key_id
         self._secret_access_key = secret_access_key
         self._aws_region = aws_region
         self._queue_url = queue_url
-        self._wait_time_seconds = wait_time_seconds
+        self._wait_time_seconds = wait_time_seconds or 10
 
         self._sqs_client = boto3.client(
             'sqs', 

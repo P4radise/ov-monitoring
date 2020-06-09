@@ -50,7 +50,7 @@ if not sent_datetime_field or not isinstance(sent_datetime_field, str):
     add_error_text('sentDateTimeField cannot be empty and must be a string')
 
 message_filter = settings_data["messageFilter"]
-if not isinstance(message_filter, str):
+if message_filter is not None and not isinstance(message_filter, str):
     add_error_text("messageFilter must be a string")
 
 aws_access_key_id = settings_data["awsAccessKeyId"]
@@ -70,8 +70,8 @@ if not queue_url or not isinstance(queue_url, str) or not re.match('https?://', 
     add_error_text('queueUrl must be a string and start with a protocol (http or https)')
 
 wait_time_seconds = settings_data["waitTimeSeconds"]
-if not isinstance(wait_time_seconds, int) or wait_time_seconds < 0 or wait_time_seconds > 20:
-    add_error_text('waitTimeSeconds value must be an integer between 0 and 20')
+if wait_time_seconds is not None and (not isinstance(wait_time_seconds, int) or wait_time_seconds < 0 or wait_time_seconds > 20):
+    add_error_text('waitTimeSeconds value must be an integer between 0 and 20 or null')
 
 if integration_log and error_text:
     integration_log.add(LogLevel.ERROR, 'Incorrect value(s) ​​in the settings file', error_text)
@@ -87,6 +87,6 @@ try:
     sqsIntegration.start()
 except Exception as e:
     argsCount = len(e.args)
-    description = e.args[1] if argsCount else ''
+    description = e.args[1] if argsCount > 1 else ''
     integration_log.add(LogLevel.ERROR, e.args[0], description)
     raise Exception(e.args[0])
