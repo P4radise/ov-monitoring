@@ -1,93 +1,69 @@
 from integration_log import IntegrationLog, LogLevel
 from message_queue_service import MessageQueueService
 from message_trackor import MessageTrackor
+from amazon_message import AmazonMessage
 
 
 class Integration(object):
     ITERATION_MAX_NUM = 200
 
-    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_name,
+    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_log,
                     aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                    message_body_field, sent_datetime_field, message_filter, wait_time_seconds):
+                    message_body_field, sent_datetime_field, message_filter='(?s).*', wait_time_seconds=10):
+        self._message_filter = message_filter
+        self._integration_log = ov_integration_log
 
         self._message_queue_service = MessageQueueService(aws_access_key_id, aws_secret_access_key, aws_region,
-                                                            queue_url, wait_time_seconds, message_filter)
-        self._integration_log = IntegrationLog(process_id, ov_url, ov_access_key, ov_secret_key,
-                                                ov_integration_name, ov_token=True)
+                                                            queue_url, wait_time_seconds)
         self._message_trackor = MessageTrackor(ov_url, ov_access_key, ov_secret_key, 
                                                 ov_trackor_type, message_body_field, sent_datetime_field, ov_token=True)
 
     def start(self):
-        self._integration_log.add_log(LogLevel.INFO, 'Starting Integration')
+        self._integration_log.add(LogLevel.INFO, 'Starting Integration')
 
         iteration_count = 0
         while iteration_count < Integration.ITERATION_MAX_NUM:
-            self._integration_log.add_log(LogLevel.INFO, 'Receiving messages from the SQS queue')
-            try:
-                messages = self._message_queue_service.get_messages()
-            except Exception as e:
-                self._integration_log.add_log(LogLevel.ERROR, 'Cannot get messages from SQS queue', str(e))
-                raise Exception('Cannot get messages from SQS queue') from e
+            self._integration_log.add(LogLevel.INFO, 'Receiving messages from the SQS queue')
 
+            messages = self._message_queue_service.get_messages()
             if messages is None:
                 break
 
             for message in messages:
-                self._integration_log.add_log(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(message))
+                self._integration_log.add(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(message))
                 
-                try:
-                    message_body = self._message_queue_service.get_message_param(message, 'Body')
-                except Exception as e:
-                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot get body of message', str(e))
-                    raise Exception('Cannot get body of message') from e
-                
-                self._integration_log.add_log(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
+                aws_message = AmazonMessage(message)
 
-                try:
-                    is_message_matches_filter = self._message_queue_service.is_message_matches_filter(message_body)
-                except Exception as e:
-                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot determine the matches of the message to the filter', str(e))
-                    raise Exception('Cannot determine the matches of the message to the filter') from e
+                message_body = aws_message.get_body()
+                self._integration_log.add(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
 
-                if is_message_matches_filter == True:
-                    try:
-                        sent_datetime = self._message_queue_service.get_sent_datetime(message)
-                    except Exception as e:
-                        self._integration_log.add_log(LogLevel.ERROR, 'Cannot get sent datetime of message', str(e))
-                        raise Exception('Cannot get sent datetime of message') from e
+                is_matched_with_filter = aws_message.matches_filter(self._message_filter)
 
-                    self._integration_log.add_log(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
+                if is_matched_with_filter:
+                    sent_datetime = aws_message.get_sent_datetime()
+                    self._integration_log.add(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
 
-                    try:
-                        trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
-                    except Exception as e:
-                        self._integration_log.add_log(LogLevel.ERROR, 'Cannot create Trackor', str(e))
-                        raise Exception('Cannot create Trackor') from e
+                    trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
 
-                    self._integration_log.add_log(LogLevel.INFO, 
+                    self._integration_log.add(LogLevel.INFO, 
                                                 'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
                                                 trackor_id=str(trackor['TRACKOR_ID']), trackor_key=trackor['TRACKOR_KEY']))
                 else:
-                    self._integration_log.add_log(LogLevel.INFO, 
+                    self._integration_log.add(LogLevel.INFO, 
                                         'Message does not match filter specified in the settings file', 
                                         'Message Body = {}'.format(message_body))
                     
-                try:
-                    self._message_queue_service.delete_message(message)
-                except Exception as e:
-                    self._integration_log.add_log(LogLevel.ERROR, 'Cannot remove message from SQS queue', str(e))
-                    raise Exception('Cannot remove message from SQS queue') from e
-
-                self._integration_log.add_log(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(message))
+                self._message_queue_service.delete_message(aws_message.get_receipt_handle())
+                self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(message))
                 
             iteration_count += 1
 
         if iteration_count == 0:
-            self._integration_log.add_log(LogLevel.WARNING, 'No new messages found')
+            self._integration_log.add(LogLevel.WARNING, 'No new messages found')
         elif iteration_count == Integration.ITERATION_MAX_NUM:
-            self._integration_log.add_log(LogLevel.WARNING,
+            self._integration_log.add(LogLevel.WARNING,
                                         'The number of messages is large or messages are sent more often than the integration has time to complete')
         else:
-            self._integration_log.add_log(LogLevel.INFO, 'No messages')
+            self._integration_log.add(LogLevel.INFO, 'No messages')
             
-        self._integration_log.add_log(LogLevel.INFO, 'Integration has been completed')
+        self._integration_log.add(LogLevel.INFO, 'Integration has been completed')

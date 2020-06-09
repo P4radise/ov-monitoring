@@ -25,7 +25,7 @@ class IntegrationLog(object):
             raise Exception(curl.errors)
         return curl.jsonData
 
-    def add_log(self, log_level, message, description=""):
+    def add(self, log_level, message, description=""):
         if log_level.log_level_id <= self._ov_log_level.log_level_id:
             parameters = {'message': message, 'description': description, 'log_level_name': log_level.log_level_name}
             json_data = json.dumps(parameters)

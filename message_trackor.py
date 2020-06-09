@@ -23,6 +23,6 @@ class MessageTrackor:
         
         self._trackor.create(fields)
         if len(self._trackor.errors) > 0:
-            raise Exception(self._trackor.errors)
+            raise Exception('Cannot create Trackor', self._trackor.errors)
     
         return self._trackor.jsonData
