@@ -1,0 +1,64 @@
+{
+  "type" : "object",
+  "properties" : {
+      "ovUrl" : {
+          "type" : "string",
+          "pattern" : "^(?!https?://).*",
+          "minLength" : 1
+      },
+      "ovAccessKey" : {
+          "type" : "string",
+          "minLength" : 20,
+          "maxLength" : 20
+      },
+      "ovSecretKey" : {
+          "type" : "string",
+          "minLength" : 70,
+          "maxLength" : 70
+      },
+      "ovIntegrationName" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "trackorType" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "messageBodyField" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "sentDateTimeField" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "messageFilter" : {
+          "type" : ["string", "null"]
+      },
+
+      "awsAccessKeyId" : {
+          "type" : "string",
+          "minLength" : 16,
+          "maxLength": 128
+      },
+      "awsSecretAccessKey" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "awsRegion" : {
+          "type" : "string",
+          "minLength" : 1
+      },
+      "queueUrl" : {
+          "type" : "string",
+          "pattern" : "^(https?://).*"
+      },
+
+      "waitTimeSeconds" : {
+          "type" : ["integer", "null"],
+          "minimum" : 0,
+          "maximum" : 20,
+          "multipleOf" : 1
+      }
+  }
+}
