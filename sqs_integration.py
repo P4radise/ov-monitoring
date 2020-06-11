@@ -1,7 +1,6 @@
-from integration_log import IntegrationLog, LogLevel
+from integration_log import LogLevel
 from message_queue_service import MessageQueueService
 from message_trackor import MessageTrackor
-from amazon_message import AmazonMessage
 
 
 class Integration(object):
@@ -25,15 +24,13 @@ class Integration(object):
         while iteration_count < Integration.ITERATION_MAX_NUM:
             self._integration_log.add(LogLevel.INFO, 'Receiving messages from the SQS queue')
 
-            messages = self._message_queue_service.get_messages()
-            if messages is None:
+            aws_messages = self._message_queue_service.get_messages()
+            if not aws_messages:
                 break
 
-            for message in messages:
-                self._integration_log.add(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(message))
+            for aws_message in aws_messages:
+                self._integration_log.add(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(aws_message.message))
                 
-                aws_message = AmazonMessage(message)
-
                 message_body = aws_message.get_body()
                 self._integration_log.add(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
 
@@ -54,7 +51,7 @@ class Integration(object):
                                         'Message Body = {}'.format(message_body))
                     
                 self._message_queue_service.delete_message(aws_message.get_receipt_handle())
-                self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(message))
+                self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(aws_message.message))
                 
             iteration_count += 1
 

@@ -6,6 +6,10 @@ class AmazonMessage:
     def __init__(self, message):
         self._message = message
     
+    @property
+    def message(self):
+        return self._message
+
     def get_body(self):
         try:
             return self._message['Body']
@@ -38,4 +42,4 @@ class AmazonMessage:
                                 self._message)) from e
 
     def matches_filter(self, filter):
-        return re.fullmatch(filter, self.get_body()) != None
+        return re.fullmatch(filter, self.get_body()) is not None
