@@ -3,8 +3,7 @@
   "properties" : {
       "ovUrl" : {
           "type" : "string",
-          "pattern" : "^(?!https?://).*",
-          "minLength" : 1
+          "pattern" : "^https://.*"
       },
       "ovAccessKey" : {
           "type" : "string",
@@ -51,7 +50,7 @@
       },
       "queueUrl" : {
           "type" : "string",
-          "pattern" : "^(https?://).*"
+          "pattern" : "^https://.*"
       },
 
       "waitTimeSeconds" : {
