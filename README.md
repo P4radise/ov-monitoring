@@ -6,6 +6,7 @@ Read messages from the AWS SQS and store to the OneVizion Trackors.
 - Python 3
 - Requests - [library for python](https://requests.readthedocs.io/en/master/)
 - boto3 - [Boto is the Amazon Web Services (AWS) SDK for Python](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+- jsonschema - [Implementation of JSON Schema for Python](https://python-jsonschema.readthedocs.io/en/stable/)
 
 ## AWS Configuration
 1. Log into AWS console.
