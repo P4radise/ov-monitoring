@@ -1,5 +1,6 @@
 import re
 import json
+import traceback
 from sqs_integration import Integration
 from integration_log import IntegrationLog, LogLevel
 from jsonschema import validate
@@ -44,8 +45,12 @@ sqsIntegration = Integration(ov_url, ov_access_key, ov_secret_key, ov_trackor_ty
 try:
     sqsIntegration.start()
 except Exception as e:
-    argsCount = len(e.args)
-    error_message = str(e.args[0])
-    description = str(e.args[1]) if argsCount > 1 else ''
+    if type(e).__name__ == 'IntegrationError':
+        error_message = str(e.message)
+        description = str(e.description)
+    else:
+        error_message = repr(e)
+        description = traceback.format_exc()
+
     integration_log.add(LogLevel.ERROR, error_message, description)
     raise Exception(error_message)

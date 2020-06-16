@@ -1,6 +1,7 @@
 import boto3
 import datetime
 from amazon_message import AmazonMessage
+from integration_error import IntegrationError
 
 class MessageQueueService:
     MAX_NUMBER_OF_MESSAGES = 10
@@ -29,7 +30,7 @@ class MessageQueueService:
                 WaitTimeSeconds = self._wait_time_seconds
             )
         except Exception as e:
-            raise Exception('Cannot get messages from SQS queue', str(e))
+            raise IntegrationError('Cannot get messages from SQS queue', str(e))
 
         amazon_messages = []
         if 'Messages' in response:
@@ -45,4 +46,4 @@ class MessageQueueService:
                 ReceiptHandle = receipt_handle
             )
         except Exception as e:
-            raise Exception('Cannot remove message from SQS queue', str(e))
+            raise IntegrationError('Cannot remove message from SQS queue', str(e))

@@ -1,4 +1,5 @@
 import onevizion
+from integration_error import IntegrationError
 
 
 class MessageTrackor:
@@ -23,6 +24,6 @@ class MessageTrackor:
         
         self._trackor.create(fields)
         if len(self._trackor.errors) > 0:
-            raise Exception('Cannot create Trackor', self._trackor.errors)
+            raise IntegrationError('Cannot create Trackor', self._trackor.errors)
     
         return self._trackor.jsonData
