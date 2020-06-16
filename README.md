@@ -68,7 +68,7 @@ Example of settings.json
 
 ```json
 {
-    "ovUrl": "test.onevizion.com",
+    "ovUrl": "https://test.onevizion.com",
     "ovAccessKey": "*****",
     "ovSecretKey": "*****",
     "ovIntegrationName": "SqsIntegration",
