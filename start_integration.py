@@ -32,8 +32,10 @@ queue_url = settings_data["queueUrl"]
 
 wait_time_seconds = settings_data["waitTimeSeconds"]
 
-with open('ihub_process_id', "rb") as PFile:
-    process_id = PFile.read().decode('utf-8')
+with open('ihub_parameters.json', "rb") as PFile:
+    ihub_data = json.loads(PFile.read().decode('utf-8'))
+
+process_id = ihub_data['processId']
 
 integration_log = IntegrationLog(process_id, ov_url, ov_access_key, ov_secret_key,
                                                 ov_integration_name, ov_token=True)
