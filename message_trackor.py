@@ -4,17 +4,16 @@ from integration_error import IntegrationError
 
 class MessageTrackor:
 
-    def __init__(self, url, access_key, secret_key, trackor_type, message_body_field, sent_datetime_field, is_token_auth):
+    def __init__(self, url, access_key, secret_key, trackor_type, message_body_field, sent_datetime_field):
         self._url = url
         self._access_key = access_key
         self._secret_key = secret_key
         self._trackor_type = trackor_type
-        self._is_token_auth = is_token_auth
 
         self._message_body_field = message_body_field
         self._sent_datetime_field = sent_datetime_field
 
-        self._trackor = onevizion.Trackor(self._trackor_type, self._url, self._access_key, self._secret_key, isTokenAuth=is_token_auth)
+        self._trackor = onevizion.Trackor(self._trackor_type, self._url, self._access_key, self._secret_key, isTokenAuth=True)
 
     def create_trackor(self, message_body, sent_datetime):
         fields = {
