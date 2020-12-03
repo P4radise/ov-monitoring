@@ -15,7 +15,7 @@ class Integration(object):
         self._message_queue_service = MessageQueueService(aws_access_key_id, aws_secret_access_key, aws_region,
                                                             queue_url, wait_time_seconds)
         self._message_trackor = MessageTrackor(ov_url, ov_access_key, ov_secret_key, 
-                                                ov_trackor_type, message_body_field, sent_datetime_field)
+                                                ov_trackor_type, message_body_field, sent_datetime_field, ov_token=True)
 
     def start(self):
         self._integration_log.add(LogLevel.INFO, 'Starting Integration')
