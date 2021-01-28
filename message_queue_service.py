@@ -6,18 +6,16 @@ from integration_error import IntegrationError
 class MessageQueueService:
     MAX_NUMBER_OF_MESSAGES = 10
 
-    def __init__(self, access_key_id, secret_access_key, aws_region, queue_url, wait_time_seconds):
-        self._access_key_id = access_key_id
-        self._secret_access_key = secret_access_key
-        self._aws_region = aws_region
+    def __init__(self, aws_auth, queue_url, wait_time_seconds):
+        self._aws_auth = aws_auth
         self._queue_url = queue_url
         self._wait_time_seconds = wait_time_seconds or 10
 
         self._sqs_client = boto3.client(
             'sqs', 
-            region_name=self._aws_region, 
-            aws_access_key_id=self._access_key_id, 
-            aws_secret_access_key=self._secret_access_key
+            region_name=self._aws_auth.region, 
+            aws_access_key_id=self._aws_auth.access_key_id, 
+            aws_secret_access_key=self._aws_auth.secret_access_key
         )
 
     def get_messages(self):

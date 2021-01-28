@@ -6,16 +6,12 @@ from message_trackor import MessageTrackor
 class Integration(object):
     ITERATION_MAX_NUM = 200
 
-    def __init__(self, ov_url, ov_access_key, ov_secret_key, ov_trackor_type, process_id, ov_integration_log,
-                    aws_access_key_id, aws_secret_access_key, aws_region, queue_url, 
-                    message_body_field, sent_datetime_field, message_filter, wait_time_seconds):
-        self._message_filter = message_filter
+    def __init__(self, ov_auth, ov_integration_log, aws_auth, queue_url, 
+                    message_trackors_to_create, message_trackors_to_update, wait_time_seconds):
         self._integration_log = ov_integration_log
-
-        self._message_queue_service = MessageQueueService(aws_access_key_id, aws_secret_access_key, aws_region,
-                                                            queue_url, wait_time_seconds)
-        self._message_trackor = MessageTrackor(ov_url, ov_access_key, ov_secret_key, 
-                                                ov_trackor_type, message_body_field, sent_datetime_field, ov_token=True)
+        self._message_trackors_to_create = message_trackors_to_create
+        self._message_trackors_to_update = message_trackors_to_update
+        self._message_queue_service = MessageQueueService(aws_auth, queue_url, wait_time_seconds)
 
     def start(self):
         self._integration_log.add(LogLevel.INFO, 'Starting Integration')
@@ -31,27 +27,35 @@ class Integration(object):
             for aws_message in aws_messages:
                 self._integration_log.add(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(aws_message.message))
                 
-                message_body = aws_message.get_body()
-                self._integration_log.add(LogLevel.DEBUG, 'Message Body = {}'.format(message_body))
-
-                is_matched_with_filter = True if self._message_filter is None else aws_message.matches_filter(self._message_filter)
-
-                if is_matched_with_filter:
-                    sent_datetime = aws_message.get_sent_datetime()
-                    self._integration_log.add(LogLevel.DEBUG, 'Sent timestamp of message = {}'.format(sent_datetime))
-
-                    trackor = self._message_trackor.create_trackor(message_body, sent_datetime)
-
-                    self._integration_log.add(LogLevel.INFO, 
+                for message_trackor in self._message_trackors_to_create:
+                    if message_trackor.is_matched_with_filter(aws_message):
+                        new_trackor = message_trackor.create_trackor(aws_message)
+                        self._integration_log.add(LogLevel.INFO, 
                                                 'Trackor created.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
-                                                trackor_id=str(trackor['TRACKOR_ID']), trackor_key=trackor['TRACKOR_KEY']))
-                else:
-                    self._integration_log.add(LogLevel.INFO, 
-                                        'Message does not match filter specified in the settings file', 
-                                        'Message Body = {}'.format(message_body))
+                                                trackor_id=str(new_trackor['TRACKOR_ID']), trackor_key=new_trackor['TRACKOR_KEY']))
+                    else:
+                        self._integration_log.add(LogLevel.DEBUG, 'Message does not match the filter to create a Trackor', 
+                                                    'Message:\n{}'.format(aws_message.message))
+
+                for message_trackor in self._message_trackors_to_update:
+                    if message_trackor.is_matched_with_filter(aws_message):
+                        
+                        found_trackors_data = message_trackor.find_trackors(aws_message)
+                        if len(found_trackors_data) == 0:
+                            self._integration_log.add(LogLevel.WARNING, 'Trackors not found')
+
+                        for trackor_data in found_trackors_data:
+                            updated_trackor = message_trackor.update_trackor(trackor_data['TRACKOR_ID'], aws_message)
+                        
+                            self._integration_log.add(LogLevel.INFO, 
+                                                    'Trackor updated.\nTrackor Id = {trackor_id}\nTrackor Key = {trackor_key}'.format(
+                                                    trackor_id=str(updated_trackor['TRACKOR_ID']), trackor_key=updated_trackor['TRACKOR_KEY']))
+                    else:
+                        self._integration_log.add(LogLevel.DEBUG, 'Message does not match the filter to update a Trackors', 
+                                                    'Message:\n{}'.format(aws_message.message))
                     
-                self._message_queue_service.delete_message(aws_message.get_receipt_handle())
-                self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message: {}'.format(aws_message.message))
+                self._message_queue_service.delete_message(aws_message.get_attribute_value(['ReceiptHandle']))
+                self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message:\n{}'.format(aws_message.message))
                 
             iteration_count += 1
 
