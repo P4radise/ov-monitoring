@@ -17,6 +17,20 @@
                 "sqsAttribute"
             ]
         },
+        "groupValueVsSqsAttributeValue" : {
+            "oneOf": [
+                { "$ref": "#/definitions/sqsAttributeValue" },
+                {
+                    "properties" : {
+                        "groupValueName" : { "type" : "string" }
+                    },
+                    "required" : [
+                        "groupValueName"
+                    ]
+                }
+            ]
+        },
+
         "messageTrackor" : {
             "type" : "object",
             "properties" : {
@@ -33,6 +47,36 @@
                         }
                     ]
                 },
+                "messageGroup" : {
+                    "type" : "object",
+                    "properties" : {
+                        "groupBy" : {"$ref": "#/definitions/sqsAttributeValue"},
+                        "values" : {
+                            "type" : "array",
+                            "items" : {
+                                "type" : "object",
+                                "property" : {
+                                    "valueName" : {"type" : "string"},
+                                    "function" : {
+                                        "type" : "string",
+                                        "enum": ["min", "max"]
+                                    },
+                                    "value" : {"$ref": "#/definitions/sqsAttributeValue"}
+                                },
+                                "required" : [
+                                    "valueName",
+                                    "function",
+                                    "value"
+                                ]
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required" : [
+                        "groupBy",
+                        "values"
+                    ]
+                },
                 "trackorType" : { 
                     "type" : "string",
                     "minLength" : 1
@@ -41,7 +85,7 @@
                     "type" : "array",
                     "items" : {
                         "allOf": [
-                            { "$ref": "#/definitions/sqsAttributeValue" },
+                            { "$ref": "#/definitions/groupValueVsSqsAttributeValue" },
                             { 
                                 "properties" : {
                                     "ovField" : {"type" : "string" }
@@ -87,7 +131,8 @@
             "items" : {
                 "$ref": "#/definitions/messageTrackor"
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 10
         },
         "updateTrackors" : {
             "type" : "array",
@@ -104,7 +149,7 @@
                                         "type" : "array",
                                         "items" : {
                                             "allOf" : [
-                                                {"$ref": "#/definitions/sqsAttributeValue"},
+                                                {"$ref": "#/definitions/groupValueVsSqsAttributeValue"},
                                                 {
                                                     "properties" : {
                                                         "paramName" : {
@@ -125,7 +170,8 @@
                     }
                 ]
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 10
         },
 
         "awsAccessKeyId" : {

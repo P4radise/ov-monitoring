@@ -27,9 +27,11 @@ queue_url = settings_data["queueUrl"]
 wait_time_seconds = settings_data["waitTimeSeconds"]
 
 if "createTrackors" in settings_data:
-    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], False, ov_auth)
+    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], ov_auth)
 if "updateTrackors" in settings_data:
-    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], True, ov_auth)
+    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], ov_auth)
+
+message_trackors = message_trackors_to_create + message_trackors_to_update
 
 with open('ihub_parameters.json', "rb") as PFile:
     ihub_data = json.loads(PFile.read().decode('utf-8'))
@@ -40,7 +42,7 @@ integration_log = IntegrationLog(process_id, ov_auth.url, ov_auth.access_key, ov
                                                 ov_integration_name, ov_token=True)
 
 sqsIntegration = Integration(ov_auth, integration_log, aws_auth, queue_url, 
-                                message_trackors_to_create, message_trackors_to_update, wait_time_seconds)
+                                message_trackors, wait_time_seconds)
 
 try:
     sqsIntegration.start()

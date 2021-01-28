@@ -14,6 +14,9 @@ class MessagesAttributeParser:
         return aws_message.get_attribute_value(attributes)
 
     def get_value_part(self, value):
+        if not self._value_regexp:
+            return value
+
         try:
             value_part = re.findall(self._value_regexp, value)[0]
         except Exception as e:
@@ -25,17 +28,21 @@ class MessagesAttributeParser:
 
     def get_processed_value(self, aws_message):
         value = self.get_attribute_value(aws_message)
-        processed_value = self.get_value_part(value) if self._value_regexp else value
+        processed_value = self.get_value_part(value)
 
-        if self.is_datetime():
-            try:
-                sent_datetime = datetime.datetime.fromtimestamp(int(processed_value) / 1000)
-            except Exception as e:
-                raise IntegrationError('Cannot converted timestamp to datetime. Timestamp = {}'.format(processed_value), str(e))
-        
-            processed_value = sent_datetime.strftime(self._datetime_format)
+        return self.formatted_value(processed_value)
 
-        return processed_value
-
-    def is_datetime(self):
+    def is_timestamp(self):
         return self._datetime_format is not None
+
+    def timestamp_to_datetime(self, value):
+        try:
+            sent_datetime = datetime.datetime.fromtimestamp(int(value) / 1000)
+        except Exception as e:
+            raise IntegrationError('Cannot converted timestamp to datetime. Timestamp = {}'.format(value), str(e))
+    
+        return sent_datetime.strftime(self._datetime_format)
+
+    def formatted_value(self, value):
+        #TODO add cast to different formats if need
+        return self.timestamp_to_datetime(value) if self.is_timestamp() else value
