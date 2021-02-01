@@ -17,10 +17,14 @@ class MessagesAttributeParser:
         if not self._value_regexp:
             return value
 
-        try:
-            value_part = re.findall(self._value_regexp, value)[0]
-        except Exception as e:
-            raise IntegrationError('Cannot get value part. Value regexp = {}'.format(self._value_regexp), str(e))
+        value_part_list = re.findall(self._value_regexp, value)
+        if not value_part_list:
+            value_part = ''
+        else:
+            try:
+                value_part = value_part_list[0]
+            except Exception as e:
+                raise IntegrationError('Cannot get value part. Value regexp = {}'.format(self._value_regexp), str(e))
         
         if not isinstance(value_part, str):
             raise IntegrationError('Value part is not a string.', 'Value = {}; Value regexp = {}'.format(value, self._value_regexp))

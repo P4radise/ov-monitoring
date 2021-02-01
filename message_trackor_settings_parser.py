@@ -1,18 +1,18 @@
-from message_trackor import MessageTrackor, MessageFilter, TrackorFilter, FieldMappings
-from message_group import MessagesGroupSettings, GroupValuesSetting
+from message_trackor_service import MessageTrackorService, TrackorFilter, FieldMappings
+from message_group import MessagesGroupManagement, GroupValuesSetting
 from message_attribute_parser import MessagesAttributeParser
+from message_trackor_management import MessageTrackorManagement, MessageFilter, Parser
 
 
 class MessageTrackorSettingsParser:
 
     @staticmethod
-    def get_message_trackors(message_trackor_settings, ov_auth):
-        message_trackors = []
+    def get_message_trackors(message_trackor_settings, ov_auth, is_need_update):
+        message_trackors_management = []
         for settings_data in message_trackor_settings:
             message_filter = MessageTrackorSettingsParser.get_message_filter(settings_data["messageFilter"]) if "messageFilter" in settings_data else None
+            
             trackor_type = settings_data["trackorType"]
-            messages_group_settings = MessageTrackorSettingsParser.get_messsage_group(settings_data["messageGroup"]) if "messageGroup" in settings_data else None
-
             field_mappings = MessageTrackorSettingsParser.get_field_mappings(settings_data["fieldMappings"])
 
             if "trackorFilter" in settings_data:
@@ -23,10 +23,14 @@ class MessageTrackorSettingsParser:
             else:
                 trackor_filter = None
 
-            massage_trackor = MessageTrackor(ov_auth, trackor_type, message_filter, messages_group_settings, field_mappings, trackor_filter)
-            message_trackors.append(massage_trackor)
+            message_trackor_service = MessageTrackorService(ov_auth, trackor_type, field_mappings, trackor_filter)
 
-        return message_trackors
+            messages_group_management = MessageTrackorSettingsParser.get_messsage_group(settings_data["messageGroup"]) if "messageGroup" in settings_data else None
+
+            message_trackor_management = MessageTrackorManagement(message_trackor_service, message_filter, messages_group_management, is_need_update)
+            message_trackors_management.append(message_trackor_management)
+
+        return message_trackors_management
 
     @staticmethod
     def get_messages_attribute_value(data):
@@ -50,7 +54,7 @@ class MessageTrackorSettingsParser:
             group_values_settings = GroupValuesSetting(value['valueName'], value["function"], value_data)
             values_settings.append(group_values_settings)
 
-        return MessagesGroupSettings(group_by_settings, values_settings)
+        return MessagesGroupManagement(group_by_settings, values_settings)
         
     @staticmethod
     def get_field_mappings(field_mappings_settings):

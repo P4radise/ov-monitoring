@@ -1,29 +1,17 @@
-import re
 import json
 import onevizion
 from curl import Curl
 from integration_error import IntegrationError
 from integration_log import HTTPBearerAuth
-from message_group import MessagesGroupSettings, Group
+from message_group import Group
 
 
-class MessageTrackor:
-    def __init__(self, ov_auth, trackor_type, message_filter, messages_group_settings, field_mappings, trackor_filter):
-        self._message_filter = message_filter
+class MessageTrackorService:
+    def __init__(self, ov_auth, trackor_type, field_mappings, trackor_filter):
         self._ov_auth = ov_auth
         self._trackor = onevizion.Trackor(trackor_type, ov_auth.url, ov_auth.access_key, ov_auth.secret_key, ovToken=ov_auth.is_token_auth)
         self._field_mappings = field_mappings
         self._trackor_filter = trackor_filter
-        self._message_group = messages_group_settings
-
-    def is_group_trackor(self):
-        return True if self._message_group else False
-    
-    def is_update(self):
-        return True if self._trackor_filter else False
-
-    def is_matched_with_filter(self, ams_message):
-        return self._message_filter.is_matched_with_filter(ams_message) if self._message_filter else True
 
     # data - instance of AmazonMessage or Group class
     def create_trackor(self, data):
@@ -56,22 +44,6 @@ class MessageTrackor:
         
         return self._trackor.jsonData
 
-    def get_groups(self):
-        return self._message_group.formatted_groups()
-
-    def update_group(self, aws_message):
-        self._message_group.update(aws_message)
-
-
-class MessageFilter:
-    def __init__(self, filter_regexp, atrribute_value_parser):
-        self._filter_regexp = filter_regexp
-        self._attributes_value = atrribute_value_parser
-    
-    def is_matched_with_filter(self, ams_message):
-        processed_value = self._attributes_value.get_processed_value(ams_message)
-        return re.fullmatch(self._filter_regexp, processed_value) is not None
-
 
 class TrackorFilter:
 
@@ -95,6 +67,7 @@ class TrackorFilter:
 
             ready_serach_conditions = ready_serach_conditions.replace(':' + param_name, value)
         return ready_serach_conditions
+
 
 class FieldMappings:
     def __init__(self, fields_values):

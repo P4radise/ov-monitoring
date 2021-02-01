@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from integration_error import IntegrationError
 
 
-class MessagesGroupSettings:
+class MessagesGroupManagement:
 
     def __init__(self, group_by_settings, values_settings):
         self._group_by_settings = group_by_settings
@@ -11,7 +11,7 @@ class MessagesGroupSettings:
         #[Group, ...]
         self._groups = []
 
-    def update(self, aws_message):
+    def update_groups(self, aws_message):
         message_group_key_value = self._group_by_settings.get_processed_value(aws_message)
         suitable_group = self.get_group(message_group_key_value)
 
@@ -31,7 +31,7 @@ class MessagesGroupSettings:
     def groups(self):
         return self._groups
     
-    def formatted_groups(self):
+    def get_formatted_groups(self):
         for group in self._groups:
             for value_settings in self._values_settings:
                 value_settings.formatted_value(group)
@@ -63,11 +63,12 @@ class GroupValuesSetting:
         value = self._value_data.get_attribute_value(aws_message)
         message_value = self._value_data.get_value_part(value)
 
-        if self._value_name in group.values:
-            group_value = group.values[self._value_name]
-            group.values[self._value_name] = GroupValuesSetting.OPERATIONS[self._function_name](group_value, message_value)
-        else:
-            group.values[self._value_name] = message_value
+        if message_value:
+            if self._value_name in group.values:
+                group_value = group.values[self._value_name]
+                group.values[self._value_name] = GroupValuesSetting.OPERATIONS[self._function_name](group_value, message_value)
+            else:
+                group.values[self._value_name] = message_value
 
     def formatted_value(self, group):
         if self._value_name in group.values:

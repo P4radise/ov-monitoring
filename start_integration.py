@@ -3,6 +3,7 @@ import json
 import traceback
 from sqs_integration import Integration
 from integration_log import IntegrationLog, LogLevel
+from integration_error import IntegrationError
 from jsonschema import validate
 from auth_data import OnevizionAuth, AwsAuth
 from message_trackor_settings_parser import MessageTrackorSettingsParser
@@ -27,9 +28,9 @@ queue_url = settings_data["queueUrl"]
 wait_time_seconds = settings_data["waitTimeSeconds"]
 
 if "createTrackors" in settings_data:
-    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], ov_auth)
+    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], ov_auth, False)
 if "updateTrackors" in settings_data:
-    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], ov_auth)
+    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], ov_auth, True)
 
 message_trackors = message_trackors_to_create + message_trackors_to_update
 
@@ -46,13 +47,13 @@ sqsIntegration = Integration(ov_auth, integration_log, aws_auth, queue_url,
 
 try:
     sqsIntegration.start()
-except Exception as e:
-    if type(e).__name__ == 'IntegrationError':
-        error_message = str(e.message)
-        description = str(e.description)
-    else:
-        error_message = repr(e)
-        description = traceback.format_exc()
-
+except IntegrationError as e:
+    error_message = str(e.message)
+    description = str(e.description)
     integration_log.add(LogLevel.ERROR, error_message, description)
-    raise Exception(error_message)
+    raise e
+except Exception as e:
+    error_message = repr(e)
+    description = traceback.format_exc()
+    integration_log.add(LogLevel.ERROR, error_message, description)
+    raise e
