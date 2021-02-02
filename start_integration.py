@@ -27,13 +27,6 @@ aws_auth = AwsAuth(settings_data["awsAccessKeyId"], settings_data["awsSecretAcce
 queue_url = settings_data["queueUrl"]
 wait_time_seconds = settings_data["waitTimeSeconds"]
 
-if "createTrackors" in settings_data:
-    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], ov_auth, False)
-if "updateTrackors" in settings_data:
-    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], ov_auth, True)
-
-message_trackors = message_trackors_to_create + message_trackors_to_update
-
 with open('ihub_parameters.json', "rb") as PFile:
     ihub_data = json.loads(PFile.read().decode('utf-8'))
 
@@ -41,6 +34,13 @@ process_id = ihub_data['processId']
 
 integration_log = IntegrationLog(process_id, ov_auth.url, ov_auth.access_key, ov_auth.secret_key,
                                                 ov_integration_name, ov_token=True)
+
+if "createTrackors" in settings_data:
+    message_trackors_to_create = MessageTrackorSettingsParser.get_message_trackors(settings_data["createTrackors"], ov_auth, False, integration_log)
+if "updateTrackors" in settings_data:
+    message_trackors_to_update = MessageTrackorSettingsParser.get_message_trackors(settings_data["updateTrackors"], ov_auth, True, integration_log)
+
+message_trackors = message_trackors_to_create + message_trackors_to_update
 
 sqsIntegration = Integration(ov_auth, integration_log, aws_auth, queue_url, 
                                 message_trackors, wait_time_seconds)

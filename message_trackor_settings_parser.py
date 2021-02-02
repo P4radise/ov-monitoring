@@ -1,14 +1,14 @@
 from message_trackor_service import MessageTrackorService, TrackorFilter, FieldMappings
 from message_group import MessagesGroupManagement, GroupValuesSetting
 from message_attribute_parser import MessagesAttributeParser
-from message_trackor_management import MessageTrackorManagement, MessageFilter, Parser
+from message_trackor_manager import MessageTrackorManager, MessageFilter
 
 
 class MessageTrackorSettingsParser:
 
     @staticmethod
-    def get_message_trackors(message_trackor_settings, ov_auth, is_need_update):
-        message_trackors_management = []
+    def get_message_trackors(message_trackor_settings, ov_auth, is_need_update, integration_log):
+        message_trackors_manager = []
         for settings_data in message_trackor_settings:
             message_filter = MessageTrackorSettingsParser.get_message_filter(settings_data["messageFilter"]) if "messageFilter" in settings_data else None
             
@@ -25,12 +25,12 @@ class MessageTrackorSettingsParser:
 
             message_trackor_service = MessageTrackorService(ov_auth, trackor_type, field_mappings, trackor_filter)
 
-            messages_group_management = MessageTrackorSettingsParser.get_messsage_group(settings_data["messageGroup"]) if "messageGroup" in settings_data else None
+            messages_group_manager = MessageTrackorSettingsParser.get_messsage_group(settings_data["messageGroup"]) if "messageGroup" in settings_data else None
 
-            message_trackor_management = MessageTrackorManagement(message_trackor_service, message_filter, messages_group_management, is_need_update)
-            message_trackors_management.append(message_trackor_management)
+            message_trackor_manager = MessageTrackorManager(message_trackor_service, message_filter, messages_group_manager, is_need_update, integration_log)
+            message_trackors_manager.append(message_trackor_manager)
 
-        return message_trackors_management
+        return message_trackors_manager
 
     @staticmethod
     def get_messages_attribute_value(data):
