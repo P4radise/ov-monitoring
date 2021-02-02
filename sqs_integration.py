@@ -7,8 +7,7 @@ from message_trackor_service import MessageTrackorService
 class Integration(object):
     ITERATION_MAX_NUM = 200
 
-    def __init__(self, ov_auth, ov_integration_log, aws_auth, queue_url, 
-                    message_trackors_managers, wait_time_seconds):
+    def __init__(self, ov_integration_log, aws_auth, queue_url, message_trackors_managers, wait_time_seconds):
         self._integration_log = ov_integration_log
         self._message_queue_service = MessageQueueService(aws_auth, queue_url, wait_time_seconds)
         self._message_trackors_managers = message_trackors_managers
@@ -28,7 +27,7 @@ class Integration(object):
                 self._integration_log.add(LogLevel.DEBUG, 'Message from SQS queue', 'Message:\n{}'.format(aws_message.message))
 
                 for message_trackors_manager in self._message_trackors_managers:
-                    message_trackors_manager.parse_message(aws_message)
+                    message_trackors_manager.process_message(aws_message)
 
                 self._message_queue_service.delete_message(aws_message.get_attribute_value(['ReceiptHandle']))
                 self._integration_log.add(LogLevel.INFO, 'Message deleted from SQS queue', 'Message:\n{}'.format(aws_message.message))

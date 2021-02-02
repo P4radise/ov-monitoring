@@ -42,8 +42,7 @@ if "updateTrackors" in settings_data:
 
 message_trackors = message_trackors_to_create + message_trackors_to_update
 
-sqsIntegration = Integration(ov_auth, integration_log, aws_auth, queue_url, 
-                                message_trackors, wait_time_seconds)
+sqsIntegration = Integration(integration_log, aws_auth, queue_url, message_trackors, wait_time_seconds)
 
 try:
     sqsIntegration.start()
