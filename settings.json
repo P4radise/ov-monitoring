@@ -1,17 +1,61 @@
 {
-  "ovUrl": "",
-  "ovAccessKey": "",
-  "ovSecretKey": "",
-  "ovIntegrationName": "",
-  "trackorType" : "",
-  "messageBodyField" : "",
-  "sentDateTimeField" : "",
-  "messageFilter" : null,
+    "ovUrl": "",
+    "ovAccessKey": "",
+    "ovSecretKey": "",
+    "ovIntegrationName": "",
 
-  "awsAccessKeyId": "",
-  "awsSecretAccessKey": "",
-  "awsRegion": "",
-  "queueUrl" : "",
+    "createTrackors": [{
+        "messageFilter": {
+            "filterRegexp": "",
+            "sqsAttribute": ""
+        },
+        "trackorType": "",
+        "fieldMappings": [{
+                "ovField": "",
+                "sqsAttribute": ""
+            }, {
+                "ovField": "",
+                "sqsAttribute": "",
+                "dateTimeFormat": ""
+            }
+        ]
+    }],
 
-  "waitTimeSeconds" :
+    "updateTrackors": [{
+        "messageGroup": {
+            "groupBy": {
+                "sqsAttribute": "",
+                "valueRegexp": ""
+            },
+            "values": [{
+                "valueName": "",
+                "function": "",
+                "value": {
+                    "sqsAttribute": "",
+                    "dateTimeFormat": ""
+                }
+            }]
+        },
+        "trackorType": "",
+        "trackorFilter": {
+            "searchConditions": "",
+            "searchConditionsParams": [{
+                    "paramName": "",
+                    "groupValueName": ""
+                }
+            ]
+        },
+        "fieldMappings": [{
+                "ovField": "",
+                "groupValueName": ""
+            }
+        ]
+    }],
+
+    "awsAccessKeyId": "",
+    "awsSecretAccessKey": "",
+    "awsRegion": "",
+    "queueUrl" : "",
+
+    "waitTimeSeconds" : 
 }
