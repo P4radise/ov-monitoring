@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from integration_error import IntegrationError
 
 
-class MessagesGroupManagement:
+class MessageGroupManager:
 
     def __init__(self, group_by_settings, values_settings):
         self._group_by_settings = group_by_settings
@@ -39,7 +39,7 @@ class MessagesGroupManagement:
         return self._groups
         
 
-class GroupValuesSetting:
+class GroupValuesManager:
     # TODO: add Count, Sum, Avg if needed
     OPERATIONS = {
         'min': lambda x,y: min(int(x), int(y)),
@@ -66,7 +66,7 @@ class GroupValuesSetting:
         if message_value:
             if self._value_name in group.values:
                 group_value = group.values[self._value_name]
-                group.values[self._value_name] = GroupValuesSetting.OPERATIONS[self._function_name](group_value, message_value)
+                group.values[self._value_name] = GroupValuesManager.OPERATIONS[self._function_name](group_value, message_value)
             else:
                 group.values[self._value_name] = message_value
 

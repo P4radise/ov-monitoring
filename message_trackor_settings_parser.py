@@ -1,5 +1,5 @@
 from message_trackor_service import MessageTrackorService, TrackorFilter, FieldMappings
-from message_group import MessagesGroupManagement, GroupValuesSetting
+from message_group import MessageGroupManager, GroupValuesManager
 from message_attribute_parser import MessagesAttributeParser
 from message_trackor_manager import MessageTrackorManager, MessageFilter
 
@@ -51,10 +51,10 @@ class MessageTrackorSettingsParser:
         values_settings = []
         for value in message_group_settings['values']:
             value_data = MessageTrackorSettingsParser.get_messages_attribute_value(value["value"])
-            group_values_settings = GroupValuesSetting(value['valueName'], value["function"], value_data)
+            group_values_settings = GroupValuesManager(value['valueName'], value["function"], value_data)
             values_settings.append(group_values_settings)
 
-        return MessagesGroupManagement(group_by_settings, values_settings)
+        return MessageGroupManager(group_by_settings, values_settings)
         
     @staticmethod
     def get_field_mappings(field_mappings_settings):
