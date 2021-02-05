@@ -1,63 +1,211 @@
 {
-  "type" : "object",
-  "properties" : {
-      "ovUrl" : {
-          "type" : "string",
-          "pattern" : "^https://.*"
-      },
-      "ovAccessKey" : {
-          "type" : "string",
-          "minLength" : 20,
-          "maxLength" : 20
-      },
-      "ovSecretKey" : {
-          "type" : "string",
-          "minLength" : 70,
-          "maxLength" : 70
-      },
-      "ovIntegrationName" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "trackorType" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "messageBodyField" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "sentDateTimeField" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "messageFilter" : {
-          "type" : ["string", "null"]
-      },
+    "definitions": {
+        "sqsAttributeValue" : {
+            "type" : "object",
+            "properties" : {
+                "sqsAttribute" : {
+                    "type" : "string"
+                },
+                "valueRegexp" : {
+                    "type" : "string"
+                },
+                "dateTimeFormat" : {
+                    "type" : "string"
+                }
+            },
+            "required" : [
+                "sqsAttribute"
+            ]
+        },
+        "groupValueVsSqsAttributeValue" : {
+            "oneOf": [
+                { "$ref": "#/definitions/sqsAttributeValue" },
+                {
+                    "properties" : {
+                        "groupValueName" : { "type" : "string" }
+                    },
+                    "required" : [
+                        "groupValueName"
+                    ]
+                }
+            ]
+        },
 
-      "awsAccessKeyId" : {
-          "type" : "string",
-          "minLength" : 16,
-          "maxLength": 128
-      },
-      "awsSecretAccessKey" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "awsRegion" : {
-          "type" : "string",
-          "minLength" : 1
-      },
-      "queueUrl" : {
-          "type" : "string",
-          "pattern" : "^https://.*"
-      },
+        "messageTrackor" : {
+            "type" : "object",
+            "properties" : {
+                "messageFilter" : {
+                    "allOf": [
+                        { "$ref": "#/definitions/sqsAttributeValue" },
+                        {
+                            "properties" : {
+                                "filterRegexp" : {"type" : "string" }
+                            },
+                            "required" : [
+                                "filterRegexp"
+                            ]
+                        }
+                    ]
+                },
+                "messageGroup" : {
+                    "type" : "object",
+                    "properties" : {
+                        "groupBy" : {"$ref": "#/definitions/sqsAttributeValue"},
+                        "values" : {
+                            "type" : "array",
+                            "items" : {
+                                "type" : "object",
+                                "property" : {
+                                    "valueName" : {"type" : "string"},
+                                    "function" : {
+                                        "type" : "string",
+                                        "enum": ["min", "max"]
+                                    },
+                                    "value" : {"$ref": "#/definitions/sqsAttributeValue"}
+                                },
+                                "required" : [
+                                    "valueName",
+                                    "function",
+                                    "value"
+                                ]
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required" : [
+                        "groupBy",
+                        "values"
+                    ]
+                },
+                "trackorType" : { 
+                    "type" : "string",
+                    "minLength" : 1
+                },
+                "fieldMappings" : { 
+                    "type" : "array",
+                    "items" : {
+                        "allOf": [
+                            { "$ref": "#/definitions/groupValueVsSqsAttributeValue" },
+                            { 
+                                "properties" : {
+                                    "ovField" : {"type" : "string" }
+                                },
+                                "required" : [
+                                    "ovField"
+                                ]
+                            }
+                        ]
+                    },
+                    "minItems": 1
+                }
+            },
+            "required" : [
+                "trackorType",
+                "fieldMappings"
+            ]
+        }
+    },
 
-      "waitTimeSeconds" : {
-          "type" : ["integer", "null"],
-          "minimum" : 0,
-          "maximum" : 20,
-          "multipleOf" : 1
-      }
-  }
+    "type" : "object",
+    "properties" : {
+        "ovUrl" : {
+            "type" : "string",
+            "pattern" : "^https://.*"
+        },
+        "ovAccessKey" : {
+            "type" : "string",
+            "minLength" : 20,
+            "maxLength" : 20
+        },
+        "ovSecretKey" : {
+            "type" : "string",
+            "minLength" : 70,
+            "maxLength" : 70
+        },
+        "ovIntegrationName" : {
+            "type" : "string",
+            "minLength" : 1
+        },
+        "createTrackors" : {
+            "type" : "array",
+            "items" : {
+                "$ref": "#/definitions/messageTrackor"
+            },
+            "minItems": 1,
+            "maxItems": 10
+        },
+        "updateTrackors" : {
+            "type" : "array",
+            "items" : {
+                "allOf": [
+                    { "$ref": "#/definitions/messageTrackor" },
+                    { 
+                        "properties" : {
+                            "trackorFilter" : { 
+                                "type" : "object",
+                                "properties" : {
+                                    "searchConditions" : { "type" : "string"},
+                                    "searchConditionsParams" : {
+                                        "type" : "array",
+                                        "items" : {
+                                            "allOf" : [
+                                                {"$ref": "#/definitions/groupValueVsSqsAttributeValue"},
+                                                {
+                                                    "properties" : {
+                                                        "paramName" : {
+                                                            "type" : "string"
+                                                        }
+                                                    },
+                                                    "required" : ["paramName"]
+                                                }
+                                            ]
+                                            
+                                        }
+                                    }
+                                },
+                                "required" : ["searchConditions"]
+                            }
+                        },
+                        "required" : ["trackorFilter"]
+                    }
+                ]
+            },
+            "minItems": 1,
+            "maxItems": 10
+        },
+
+        "awsAccessKeyId" : {
+            "type" : "string",
+            "minLength" : 16,
+            "maxLength": 128
+        },
+        "awsSecretAccessKey" : {
+            "type" : "string",
+            "minLength" : 1
+        },
+        "awsRegion" : {
+            "type" : "string",
+            "minLength" : 1
+        },
+        "queueUrl" : {
+            "type" : "string",
+            "pattern" : "^https://.*"
+        },
+
+        "waitTimeSeconds" : {
+            "type" : "integer",
+            "minimum" : 0,
+            "maximum" : 20,
+            "multipleOf" : 1
+        }
+    },
+    "required": [
+        "ovUrl",
+        "ovAccessKey",
+        "ovSecretKey",
+        "ovIntegrationName",
+        "awsSecretAccessKey",
+        "awsRegion",
+        "queueUrl"
+    ]
 }

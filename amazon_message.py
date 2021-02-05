@@ -1,5 +1,4 @@
-import datetime
-import re
+from integration_error import IntegrationError
 
 class AmazonMessage:
 
@@ -10,17 +9,12 @@ class AmazonMessage:
     def message(self):
         return self._message
 
-    def get_body(self):
-        return self._message['Body']
+    def get_attribute_value(self, attribute_path):
+        value = self._message
+        try:
+            for attribute in attribute_path:
+                value = value[attribute]
+        except Exception as e:
+            raise IntegrationError('Cannot get message attribute value. Attribute [{}]'.format('. '.join(attribute_path)), str(e))
 
-    def get_sent_datetime(self):
-        sent_timestamp = self._message['Attributes']['SentTimestamp']
-
-        sent_datetime = datetime.datetime.fromtimestamp(int(sent_timestamp) / 1000)
-        return sent_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-    
-    def get_receipt_handle(self):
-        return self._message['ReceiptHandle']
-
-    def matches_filter(self, filter):
-        return re.fullmatch(filter, self.get_body()) is not None
+        return value
