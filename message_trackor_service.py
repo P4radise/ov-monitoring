@@ -9,7 +9,7 @@ from message_group import Group
 class MessageTrackorService:
     def __init__(self, ov_auth, trackor_type, field_mappings, trackor_filter):
         self._ov_auth = ov_auth
-        self._trackor = onevizion.Trackor(trackor_type, ov_auth.url, ov_auth.access_key, ov_auth.secret_key, ovToken=ov_auth.is_token_auth)
+        self._trackor = onevizion.Trackor(trackor_type, ov_auth.url, ov_auth.access_key, ov_auth.secret_key, isTokenAuth=ov_auth.is_token_auth)
         self._field_mappings = field_mappings
         self._trackor_filter = trackor_filter
 
