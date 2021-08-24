@@ -1,4 +1,8 @@
 {
+    "packages": [
+        "package1", "package2"
+    ],
+
     "ovUrl": "",
     "ovAccessKey": "",
     "ovSecretKey": "",
