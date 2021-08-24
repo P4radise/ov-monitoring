@@ -1,15 +1,10 @@
 from install_package import Package
-import json
 
-
-with open('settings.json', "rb") as PFile:
-    settings_data = json.loads(PFile.read().decode('utf-8'))
-
-required_package = settings_data["packages"]
-Package(required_package).install()
+Package().install()
 
 
 import re
+import json
 import traceback
 from sqs_integration import Integration
 from integration_log import IntegrationLog, LogLevel
@@ -18,6 +13,9 @@ from jsonschema import validate
 from auth_data import OnevizionAuth, AwsAuth
 from message_trackor_settings_parser import MessageTrackorSettingsParser
 
+
+with open('settings.json', "rb") as PFile:
+    settings_data = json.loads(PFile.read().decode('utf-8'))
 
 with open('settings_schema.json', "rb") as PFile:
     data_schema = json.loads(PFile.read().decode('utf-8'))
