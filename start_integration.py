@@ -1,6 +1,7 @@
-from install_package import Package
+from install_package import install
 
-Package().install()
+
+install()
 
 
 import re
