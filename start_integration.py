@@ -1,7 +1,11 @@
-from install_package import install
+import sys
+import subprocess
 
 
-install()
+try:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'python_dependencies.txt'])
+except Exception as e:
+    raise Exception(f'Failed to install package. Exception [{str(e)}]')
 
 
 import re
