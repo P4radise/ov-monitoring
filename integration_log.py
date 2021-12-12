@@ -1,7 +1,8 @@
 import json
 import requests
 from enum import Enum
-from curl import Curl
+# from curl import Curl
+import requests
 
 
 class IntegrationLog(object):
@@ -20,7 +21,7 @@ class IntegrationLog(object):
     def get_integration_params(self):
         headers = {'content-type': 'application/json'}
         url = self._url + "/api/v3/integrations/" + self._integration_name
-        curl = Curl('GET', url, headers=headers, auth=self._auth)
+        curl = requests.get(url, headers=headers, auth=self._auth)
         if len(curl.errors) > 0:
             raise Exception(curl.errors)
         return curl.jsonData
@@ -31,7 +32,7 @@ class IntegrationLog(object):
             json_data = json.dumps(parameters)
             headers = {'content-type': 'application/json'}
             url_log = self._url + "/api/v3/integrations/runs/" + str(self._process_id) + "/logs"
-            curl = Curl('POST', url_log, data=json_data, headers=headers, auth=self._auth)
+            curl = requests.post(url_log, headers=headers, data=json_data, auth=self._auth)
             if len(curl.errors) > 0:
                 raise Exception(curl.errors)
             return curl.jsonData
