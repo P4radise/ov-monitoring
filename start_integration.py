@@ -30,7 +30,7 @@ try:
 except Exception as e:
     raise Exception("Incorrect value in the settings file\n{}".format(str(e)))
 
-ov_url = re.sub("^https://", "", settings_data["ovUrl"])
+ov_url = re.sub("^http://", "", settings_data["ovUrl"])
 ov_integration_name = settings_data["ovIntegrationName"]
 
 ov_auth = OnevizionAuth(ov_url, settings_data["ovAccessKey"], settings_data["ovSecretKey"])

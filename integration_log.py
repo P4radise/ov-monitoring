@@ -7,7 +7,7 @@ from curl import Curl
 class IntegrationLog(object):
 
     def __init__(self, process_id, url, username, password, integration_name, ov_token=False):
-        self._url = 'https://' + url
+        self._url = 'http://' + url
         self._process_id = process_id
         if ov_token == True:
             self._auth = HTTPBearerAuth(username, password)

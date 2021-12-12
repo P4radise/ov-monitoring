@@ -25,7 +25,7 @@ class MessageTrackorService:
     # data - instance of AmazonMessage or Group class
     def update_specific_trackor(self, trackor_id, data):
         headers = {'content-type': 'application/json'}
-        url = 'https://{ov_url}/api/v3/trackors/{trackor_id}'.format(ov_url=self._ov_auth.url, trackor_id=trackor_id)
+        url = 'http://{ov_url}/api/v3/trackors/{trackor_id}'.format(ov_url=self._ov_auth.url, trackor_id=trackor_id)
         fields = self._field_mappings.get_ready_fields_mapping(data)
 
         curl = Curl('PUT', url, headers=headers, auth=HTTPBearerAuth(self._ov_auth.access_key, self._ov_auth.secret_key), data=json.dumps(fields))
