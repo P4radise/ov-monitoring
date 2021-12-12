@@ -22,9 +22,11 @@ class IntegrationLog(object):
         headers = {'content-type': 'application/json'}
         url = self._url + "/api/v3/integrations/" + self._integration_name
         curl = requests.get(url, headers=headers, auth=self._auth)
-        if len(curl.errors) > 0:
+        if curl.status_code == 200:
+            return curl.jsonData
+        else:
             raise Exception(curl.errors)
-        return curl.jsonData
+        
 
     def add(self, log_level, message, description=""):
         if log_level.log_level_id <= self._ov_log_level.log_level_id:
@@ -33,9 +35,11 @@ class IntegrationLog(object):
             headers = {'content-type': 'application/json'}
             url_log = self._url + "/api/v3/integrations/runs/" + str(self._process_id) + "/logs"
             curl = requests.post(url_log, headers=headers, data=json_data, auth=self._auth)
-            if len(curl.errors) > 0:
+            if curl.status_code == 200:
+                return curl.jsonData
+            else:
                 raise Exception(curl.errors)
-            return curl.jsonData
+            
     
 
 class LogLevel(Enum):
