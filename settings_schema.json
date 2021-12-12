@@ -110,7 +110,7 @@
     "properties" : {
         "ovUrl" : {
             "type" : "string",
-            "pattern" : "^https://.*"
+            "pattern" : "^http://.*"
         },
         "ovAccessKey" : {
             "type" : "string",
