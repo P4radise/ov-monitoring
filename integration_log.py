@@ -25,7 +25,7 @@ class IntegrationLog(object):
         if curl.status_code == 200:
             return curl.jsonData
         else:
-            raise Exception(curl.errors)
+            raise Exception(curl.text)
         
 
     def add(self, log_level, message, description=""):
@@ -38,7 +38,7 @@ class IntegrationLog(object):
             if curl.status_code == 200:
                 return curl.jsonData
             else:
-                raise Exception(curl.errors)
+                raise Exception(curl.text)
             
     
 
